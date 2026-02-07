@@ -4,15 +4,13 @@ import me.toma198.commands.FlyCommand;
 import me.toma198.commands.InfectionCommand;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerCommandSendEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /*
  * What I need:
- * 1. Randomly assign imposters
+ * 1. Randomly assign imposters (yet to be tested)
  * 2. Design the infection mechanic (if a death is within 20 blocks of imposter, conversion begins)
  * 3. Design an objective (bingo, timelimit, imposter win condition)
  * 4. Remove nametags (can be done with commands)

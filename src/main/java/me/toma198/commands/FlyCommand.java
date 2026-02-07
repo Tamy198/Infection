@@ -14,10 +14,11 @@ public class FlyCommand implements CommandExecutor {
             return true;
         }
 
-        // if sender is a player, lasts 10 seconds
+        // makes player fly
+        // CURRENTLY DISABLED
         final Player player = (Player) commandSender;
-        player.setAllowFlight(true);
-        player.setFlying(true);
+        player.setAllowFlight(false);
+        player.setFlying(false);
 
         return true;
     }
