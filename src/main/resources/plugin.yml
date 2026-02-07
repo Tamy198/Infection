@@ -5,3 +5,13 @@ api-version: '1.21'
 authors:
   - toma198
 website: https://github.com/Tamy198/Infection
+
+commands:
+  fly:
+    description: Makes you fly
+    aliases:
+      - f
+  start:
+    description: Tells the server the current player count, allowing the infection to start
+  infection:
+    description: Starts the game of infection by assigning players
