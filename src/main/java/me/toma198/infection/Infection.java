@@ -10,7 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 /*
  * What I need:
- * 1. Randomly assign imposters (yet to be tested)
+ * 1. Randomly assign imposters (working?)
  * 2. Design the infection mechanic (if a death is within 20 blocks of imposter, conversion begins)
  * 3. Design an objective (bingo, timelimit, imposter win condition)
  * 4. Remove nametags (can be done with commands)

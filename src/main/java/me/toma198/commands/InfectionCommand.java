@@ -29,24 +29,41 @@ public class InfectionCommand implements CommandExecutor {
             return true;
         }
 
-        /* Step 1 - randomly assigned imposters (yet to test)
+        /* Step 1 - randomly assigned imposters (working?)
          *
          * 1. Need to know player count (done)
-         * 2. Pick an (entered) amount of imposters from the player count (done?)
-         * 3. Reveal roles to players (50%)
+         * 2. Pick an (entered) amount of imposters from the player count (done)
+         * 3. Reveal roles to players (done)
          * 4. Imposters only know each other (done)
+         * 5. Sounds (not yet)
          *
          * Potential problems/challenges:
          * - Randomising the imposters
          * - Only picking the entered amount imposters
          */
 
+        // inform of command usage if they typed no arguments
+        if (args.length < 1) {
+            sender.sendMessage("§cUsage: /" + label + " <imposterAmount>");
+            return true;
+        }
+
+        // check if the argument is numeric
+        for (Character c : args[0].toCharArray()) {
+            if (!Character.isDigit(c)) {
+                sender.sendMessage("§cImposter amount must be a positive integer");
+                sender.sendMessage("§cUsage: /" + label + " <imposterAmount>");
+                return true;
+            }
+        }
+
         int playerCount = Bukkit.getServer().getOnlinePlayers().size();
 
         // Checking to see the argument is valid
         int imposterAmount = Integer.parseInt(args[0]);
         if (imposterAmount <= 0 || imposterAmount > playerCount) {
-            sender.sendMessage("§cInvalid amount of imposters");
+            sender.sendMessage("§cInvalid amount of imposters, must be between 1 and the playerCount");
+            return true;
         }
 
         // Accessing all the players online
@@ -61,6 +78,7 @@ public class InfectionCommand implements CommandExecutor {
         for (int i = 0; i < playerCount; i++) {
             playerNumberList.add(i);
         }
+        System.out.println(playerNumberList);
 
         // Imposter list
         ArrayList<Player> imposterList = new ArrayList<>();
@@ -77,11 +95,11 @@ public class InfectionCommand implements CommandExecutor {
             for (int j = 3; j > 0; j--) {
                 title = ChatColor.GOLD + Integer.toString(j);
                 for (Player player : players) {
-                    player.sendTitle(title, subtitle, 10, 70, 20);
-                    player.playSound(player.getLocation(), Sound.ENTITY_CREEPER_PRIMED, 1.0f, 1.0f);
+                    player.sendTitle(title, subtitle, 1, 6, 2);
+                    player.playSound(player.getLocation(), Sound.ENTITY_CREEPER_PRIMED, 50.0f, 50.0f);
                 }
                 try {
-                    wait(1000);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -95,8 +113,7 @@ public class InfectionCommand implements CommandExecutor {
                 if (count == imposter) {
                     player.sendTitle(imposterMessage, subtitle, 10, 70, 20);
                     //player.sendMessage("§cYou are the imposter:)");
-                    System.out.println(player.getName() + " is the imposter");
-                    player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 1.0f, 1.0f);
+                    player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 100.0f, 100.0f);
                     imposterList.add(player);
                 } else {
                     player.sendTitle(innocent, subtitle, 10, 70, 20);
