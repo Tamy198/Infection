@@ -9,9 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NonNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Random;
+import java.util.*;
 
 public class InfectionCommand implements CommandExecutor {
     /* just for me to practice my java - later fix would be to make player count an argument
@@ -68,6 +66,8 @@ public class InfectionCommand implements CommandExecutor {
 
         // Accessing all the players online
         Collection<? extends Player> players = Bukkit.getServer().getOnlinePlayers();
+        //List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
+        //Collections.shuffle(players);
         for (Player player : players) {
             System.out.println(player.getName() + " has been registered");
             player.sendMessage("§bYou have been registered!");
@@ -78,59 +78,74 @@ public class InfectionCommand implements CommandExecutor {
         for (int i = 0; i < playerCount; i++) {
             playerNumberList.add(i);
         }
-        System.out.println(playerNumberList);
 
-        // Imposter list
+        // Imposter and innocent list
         ArrayList<Player> imposterList = new ArrayList<>();
+        Collection<? extends Player> innocentList = players;
+
+        // Countdown (could make it sync later - like the last java series episode clocks)
+        String title;
+        String subtitle = "";
+        for (int j = 3; j > 0; j--) {
+            title = ChatColor.GOLD + Integer.toString(j);
+            for (Player player : players) {
+                player.sendTitle(title, subtitle, 1, 6, 2);
+                player.playSound(player.getLocation(), Sound.ENTITY_CREEPER_PRIMED, 50.0f, 50.0f);
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         // Generating the random imposters
         Random random = new Random();
         for (int i = 0; i < imposterAmount; i++) {
             // Removing the player number from player list to ensure no duplicates
-            int imposter = playerNumberList.remove(random.nextInt(0, playerCount));
-
-            // Countdown (could make it sync later - like the last java series episode clocks)
-            String title;
-            String subtitle = "";
-            for (int j = 3; j > 0; j--) {
-                title = ChatColor.GOLD + Integer.toString(j);
-                for (Player player : players) {
-                    player.sendTitle(title, subtitle, 1, 6, 2);
-                    player.playSound(player.getLocation(), Sound.ENTITY_CREEPER_PRIMED, 50.0f, 50.0f);
-                }
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+            int imposter = playerNumberList.remove(random.nextInt(playerNumberList.size()));
 
             // Tell the player they're the imposter
-            String imposterMessage = ChatColor.RED + "You are the imposter:)";
-            String innocent = ChatColor.GREEN + "You are NOT the imposter:)";
             int count = 0;
             for (Player player : players) {
                 if (count == imposter) {
-                    player.sendTitle(imposterMessage, subtitle, 10, 70, 20);
-                    //player.sendMessage("§cYou are the imposter:)");
-                    player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 100.0f, 100.0f);
                     imposterList.add(player);
-                } else {
-                    player.sendTitle(innocent, subtitle, 10, 70, 20);
-                    //player.sendMessage("§aYou are innocent:)");
-                    System.out.println(player.getName() + " is innocent");
+                    innocentList.remove(player);
                 }
                 count++;
             }
-            playerCount--;
         }
-        playerCount = Bukkit.getServer().getOnlinePlayers().size();
 
         // Reveal the imposters to one another
         String imposterReveal = "§cThe imposters are: ";
         for (Player imposter : imposterList) {
             imposterReveal += imposter.getName() + " ";
         }
+
+        // Inform imposters of their dubiousness
+        String imposterMessage = ChatColor.RED + "You are the imposter:)";
+        for (Player player : imposterList) {
+            player.sendTitle(imposterMessage, subtitle, 10, 70, 20);
+            player.sendMessage("§cYou are the imposter, infect the innocents:)");
+            player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 100.0f, 100.0f);
+        }
+
+        // Inform innocents of their innocence
+        String innocent = ChatColor.GREEN + "You are NOT the imposter:)";
+        for (Player player : innocentList) {
+            player.sendTitle(innocent, subtitle, 10, 70, 20);
+            //player.sendMessage("§aYou are innocent:)");
+            //System.out.println(player.getName() + " is innocent");
+        }
+
+        // Wait for dramatic effect
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Then reveal message sent to imposters
         for (Player player : imposterList) {
             player.sendMessage(imposterReveal);
         }
