@@ -4,13 +4,14 @@ import me.toma198.commands.FlyCommand;
 import me.toma198.commands.InfectionCommand;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /*
  * What I need:
- * 1. Randomly assign imposters (working?)
+ * 1. Randomly assign imposters (not fully tested)
  * 2. Design the infection mechanic (if a death is within 20 blocks of imposter, conversion begins)
  * 3. Design an objective (bingo, timelimit, imposter win condition)
  * 4. Remove nametags (can be done with commands)
@@ -32,15 +33,14 @@ public final class Infection extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent e) {
         player_count++;
         System.out.println("Player count is " + player_count);
     }
 
     @EventHandler
-    public void onPlayerLeave(PlayerQuitEvent event) {
-        player_count--;
-        System.out.println("Player count is " + player_count);
+    public void onPlayerDeath(PlayerDeathEvent e) {
+        System.out.println("A player has died");
     }
 
     /* Step 1 - randomly assigned imposters
@@ -55,12 +55,28 @@ public final class Infection extends JavaPlugin implements Listener {
     * - Only picking the entered amount imposters
     */
 
+    /* * Step 2. Design the infection mechanic
+     * (if a death is within 30 blocks of imposter, conversion begins)
+     *
+     * 1. Upon a death event, check if a player is an imposter or innocent
+     * 2. If an imposter, turn into spectate
+     * 3. If an innocent, check if an imposter is near (or if the imposter damaged them)
+     * and then begin the conversion
+     * 4. Design the conversion
+     */
+
     /*
     @EventHandler
     public void onCommandExecuted(PlayerCommandSendEvent event) {
         getCommand("fly").setExecutor(new InfectionCommand(player_count));
     }
     */
+
+    @EventHandler
+    public void onPlayerLeave(PlayerQuitEvent e) {
+        player_count--;
+        System.out.println("Player count is " + player_count);
+    }
 
     @Override
     public void onDisable() {

@@ -1,23 +1,31 @@
 package me.toma198.commands;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
-public class InfectionCommand implements CommandExecutor {
+public class InfectionCommand implements CommandExecutor, Listener {
     /* just for me to practice my java - later fix would be to make player count an argument
     int player_count;
     public InfectionCommand(int player_count) {
         this.player_count = player_count;
     }
     */
+
+    // Accessing all the players online
+    Collection<? extends Player> players = Bukkit.getServer().getOnlinePlayers();
+
+    // Imposter and innocent list
+    ArrayList<Player> imposterList = new ArrayList<>();
+    Collection<? extends Player> innocentList = players;
 
     @Override
     public boolean onCommand(@NonNull CommandSender sender, @NonNull Command command,
@@ -33,7 +41,7 @@ public class InfectionCommand implements CommandExecutor {
          * 2. Pick an (entered) amount of imposters from the player count (done)
          * 3. Reveal roles to players (done)
          * 4. Imposters only know each other (done)
-         * 5. Sounds (not yet)
+         * 5. Sounds (done)
          *
          * Potential problems/challenges:
          * - Randomising the imposters
@@ -64,8 +72,6 @@ public class InfectionCommand implements CommandExecutor {
             return true;
         }
 
-        // Accessing all the players online
-        Collection<? extends Player> players = Bukkit.getServer().getOnlinePlayers();
         //List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
         //Collections.shuffle(players);
         for (Player player : players) {
@@ -78,10 +84,6 @@ public class InfectionCommand implements CommandExecutor {
         for (int i = 0; i < playerCount; i++) {
             playerNumberList.add(i);
         }
-
-        // Imposter and innocent list
-        ArrayList<Player> imposterList = new ArrayList<>();
-        Collection<? extends Player> innocentList = players;
 
         // Countdown (could make it sync later - like the last java series episode clocks)
         String title;
@@ -151,5 +153,76 @@ public class InfectionCommand implements CommandExecutor {
         }
 
         return true;
+    }
+
+    /* * Step 2. Design the infection mechanic
+     * (if a death is within 30 blocks of imposter, conversion begins)
+     *
+     * 1. Upon a death event, check if a player is an imposter or innocent
+     * 2. If an imposter, turn into spectate
+     * 3. If an innocent, check if an imposter is near (or if the imposter damaged them)
+     * and then begin the conversion
+     * 4. Design the conversion
+     */
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent e) {
+        Player dead = e.getEntity();
+        for (Player player : imposterList) {
+            // Alternate approach is to check if their get names strings match
+            if (player.equals(dead)) {
+                // call a method if imposter
+                imposterDeath(dead);
+                return;
+            }
+        }
+        // call a method if innocent
+    }
+
+    public void imposterDeath(Player p) {
+        p.setGameMode(GameMode.SPECTATOR);
+    }
+
+    public void innocentDeath(Player p) {
+        /*3. Check if an imposter is near (or if the imposter damaged them)
+        * and then begin the conversion
+        * 4. Design the conversion
+        */
+
+        // Imposter coordinates
+        //Location locationImposter;
+        double impX;
+        double impY;
+        double impZ;
+
+        // Innocent coordinates
+        //Location locationInnocent = p.getLocation();
+        double X = p.getLocation().getX();
+        double Y = p.getLocation().getY();
+        double Z = p.getLocation().getZ();
+
+        // Absolute distance squared of imposter to dead player in each dimension
+        double absX;
+        double absY;
+        double absZ;
+
+        double distFromImp;
+
+        for (Player player : imposterList) {
+            impX = player.getLocation().getX();
+            impY = player.getLocation().getY();
+            impZ = player.getLocation().getZ();
+
+            absX = Math.pow((X - impX), 2);
+            absY = Math.pow((Y - impY), 2);
+            absZ = Math.pow((Z - impZ), 2);
+
+            distFromImp = Math.sqrt(absX + absY + absZ);
+
+            if (distFromImp <= 30) {
+                // if within 30 blocks, conversion
+            }
+        }
+        // else set to spectator
     }
 }
