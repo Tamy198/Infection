@@ -8,6 +8,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -26,6 +28,9 @@ public class InfectionCommand implements CommandExecutor, Listener {
     // Imposter and innocent list
     ArrayList<Player> imposterList = new ArrayList<>();
     Collection<? extends Player> innocentList = players;
+
+    // How many people have been infected during the game
+    int infected = 0;
 
     @Override
     public boolean onCommand(@NonNull CommandSender sender, @NonNull Command command,
@@ -158,11 +163,12 @@ public class InfectionCommand implements CommandExecutor, Listener {
     /* * Step 2. Design the infection mechanic
      * (if a death is within 30 blocks of imposter, conversion begins)
      *
-     * 1. Upon a death event, check if a player is an imposter or innocent
-     * 2. If an imposter, turn into spectate
+     * 1. Upon a death event, check if a player is an imposter or innocent (done?)
+     * 2. If an imposter, turn into spectate (done?)
      * 3. If an innocent, check if an imposter is near (or if the imposter damaged them)
-     * and then begin the conversion
-     * 4. Design the conversion
+     * and then begin the conversion (done?)
+     * 4. Design the conversion (done?)
+     * 5. Imposters wrath
      */
 
     @EventHandler
@@ -177,10 +183,16 @@ public class InfectionCommand implements CommandExecutor, Listener {
             }
         }
         // call a method if innocent
+        innocentDeath(dead);
     }
 
     public void imposterDeath(Player p) {
         p.setGameMode(GameMode.SPECTATOR);
+        imposterList.remove(p);
+        if (infected == 0 && imposterList.isEmpty()) {
+            // allow them to choose a player to inherit the infection (imposter's wrath)
+            p.sendMessage(ChatColor.RED + "Choose an imposter");
+        }
     }
 
     public void innocentDeath(Player p) {
@@ -221,8 +233,37 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
             if (distFromImp <= 30) {
                 // if within 30 blocks, conversion
+                conversion(p);
             }
         }
         // else set to spectator
+        p.setGameMode(GameMode.SPECTATOR);
+    }
+
+    public void conversion(Player p) {
+        // Might be a bit flawed - will this send them back and will the effects apply?
+        p.setRespawnLocation(p.getLocation());
+
+        // make it so they are invincible and immobile during the conversion
+        p.setHealth(20);
+        p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,
+                30, 255, false, true));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
+                30, 255, false, true));
+        p.setSneaking(true);
+
+        // applies a freezing effect to the player
+        p.setFreezeTicks(p.getMaxFreezeTicks());
+
+        // set to infected and join the imposter team
+        imposterList.add(p);
+        infected++;
+
+        // conversion lasts 30 seconds
+        try {
+            Thread.sleep(30000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

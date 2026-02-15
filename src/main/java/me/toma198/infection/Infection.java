@@ -12,10 +12,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 /*
  * What I need:
  * 1. Randomly assign imposters (not fully tested)
- * 2. Design the infection mechanic (if a death is within 20 blocks of imposter, conversion begins)
+ * 2. Design the infection mechanic (if a death is within 30 blocks of imposter, conversion begins)
  * 3. Design an objective (bingo, timelimit, imposter win condition)
  * 4. Remove nametags (can be done with commands)
  * 5. If both imposters die without infecting anyone, they choose one person to pass it on to
+ * (part of step 2)
  *
  * Bingo and imposter win condition can be done manually if needed
  */
@@ -64,13 +65,6 @@ public final class Infection extends JavaPlugin implements Listener {
      * and then begin the conversion
      * 4. Design the conversion
      */
-
-    /*
-    @EventHandler
-    public void onCommandExecuted(PlayerCommandSendEvent event) {
-        getCommand("fly").setExecutor(new InfectionCommand(player_count));
-    }
-    */
 
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent e) {
