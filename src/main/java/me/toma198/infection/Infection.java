@@ -28,9 +28,15 @@ public final class Infection extends JavaPlugin implements Listener {
     public void onEnable() {
         // Plugin startup logic
         System.out.println("My plugin has started!!");
+
+        // So there's only one InfectionCommand object
+        InfectionCommand infectionCommand = new InfectionCommand(this);
+
+        // Register commands and listeners
         getServer().getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(infectionCommand, this);
         getCommand("fly").setExecutor(new FlyCommand());
-        getCommand("infection").setExecutor(new InfectionCommand());
+        getCommand("infection").setExecutor(infectionCommand);
     }
 
     @EventHandler
@@ -39,10 +45,12 @@ public final class Infection extends JavaPlugin implements Listener {
         System.out.println("Player count is " + player_count);
     }
 
+    /*
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent e) {
         System.out.println("A player has died");
     }
+     */
 
     /* Step 1 - randomly assigned imposters
     *

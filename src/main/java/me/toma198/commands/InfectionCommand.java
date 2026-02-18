@@ -8,11 +8,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
+
+import static org.bukkit.Bukkit.getServer;
 
 public class InfectionCommand implements CommandExecutor, Listener {
     /* just for me to practice my java - later fix would be to make player count an argument
@@ -21,13 +25,21 @@ public class InfectionCommand implements CommandExecutor, Listener {
         this.player_count = player_count;
     }
     */
+    Plugin plugin;
+
+    public InfectionCommand(Plugin plugin) {
+        this.plugin = plugin;
+    }
+
+    // A scheduler for asynchronous waiting so the server doesn't sleep
+    BukkitScheduler scheduler = getServer().getScheduler();
 
     // Accessing all the players online
-    Collection<? extends Player> players = Bukkit.getServer().getOnlinePlayers();
+    ArrayList<Player> players = new ArrayList<>();
 
     // Imposter and innocent list
     ArrayList<Player> imposterList = new ArrayList<>();
-    Collection<? extends Player> innocentList = players;
+    ArrayList<Player> innocentList = new ArrayList<>();
 
     // How many people have been infected during the game
     int infected = 0;
@@ -53,6 +65,8 @@ public class InfectionCommand implements CommandExecutor, Listener {
          * - Only picking the entered amount imposters
          */
 
+        players = new ArrayList<>(getServer().getOnlinePlayers());
+
         // inform of command usage if they typed no arguments
         if (args.length < 1) {
             sender.sendMessage("§cUsage: /" + label + " <imposterAmount>");
@@ -68,7 +82,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
             }
         }
 
-        int playerCount = Bukkit.getServer().getOnlinePlayers().size();
+        int playerCount = getServer().getOnlinePlayers().size();
 
         // Checking to see the argument is valid
         int imposterAmount = Integer.parseInt(args[0]);
@@ -77,18 +91,21 @@ public class InfectionCommand implements CommandExecutor, Listener {
             return true;
         }
 
-        //List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
-        //Collections.shuffle(players);
+        Collections.shuffle(players);
+        this.imposterList = new ArrayList<>(players.subList(0, imposterAmount));
+        this.innocentList = new ArrayList<>(players.subList(imposterAmount, players.size()));
         for (Player player : players) {
             System.out.println(player.getName() + " has been registered");
             player.sendMessage("§bYou have been registered!");
         }
 
         // Making sure there are no duplicates
+        /*
         ArrayList<Integer> playerNumberList = new ArrayList<>();
         for (int i = 0; i < playerCount; i++) {
             playerNumberList.add(i);
         }
+        */
 
         // Countdown (could make it sync later - like the last java series episode clocks)
         String title;
@@ -97,23 +114,44 @@ public class InfectionCommand implements CommandExecutor, Listener {
             title = ChatColor.GOLD + Integer.toString(j);
             for (Player player : players) {
                 player.sendTitle(title, subtitle, 1, 6, 2);
-                player.playSound(player.getLocation(), Sound.ENTITY_CREEPER_PRIMED, 50.0f, 50.0f);
+                player.playSound(player.getLocation(), Sound.ENTITY_CREEPER_PRIMED,
+                        10000f, 1f);
             }
+            /*
+            scheduler.scheduleSyncDelayedTask(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("Waited 1 second?");
+                    for (Player player : players) {
+                        player.sendTitle(title, subtitle, 1, 6, 2);
+                        player.playSound(player.getLocation(), Sound.ENTITY_CREEPER_PRIMED,
+                                10000f, 1f);
+                    }
+                }
+                }, 0L, 20L);
+                */
+
+
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
+
+
         }
 
+
         // Generating the random imposters
+        /*
         Random random = new Random();
+        int count;
         for (int i = 0; i < imposterAmount; i++) {
             // Removing the player number from player list to ensure no duplicates
             int imposter = playerNumberList.remove(random.nextInt(playerNumberList.size()));
 
-            // Tell the player they're the imposter
-            int count = 0;
+            // Assign imposters
+            count = 0;
             for (Player player : players) {
                 if (count == imposter) {
                     imposterList.add(player);
@@ -122,6 +160,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
                 count++;
             }
         }
+        */
 
         // Reveal the imposters to one another
         String imposterReveal = "§cThe imposters are: ";
@@ -134,7 +173,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         for (Player player : imposterList) {
             player.sendTitle(imposterMessage, subtitle, 10, 70, 20);
             player.sendMessage("§cYou are the imposter, infect the innocents:)");
-            player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 100.0f, 100.0f);
+            player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 10000f, 1f);
         }
 
         // Inform innocents of their innocence
@@ -146,11 +185,15 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }
 
         // Wait for dramatic effect
+        scheduler.scheduleSyncDelayedTask(plugin, () ->
+                System.out.println("Waited 4 second?"), 80L);
+        /*
         try {
             Thread.sleep(4000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+         */
 
         // Then reveal message sent to imposters
         for (Player player : imposterList) {
@@ -171,24 +214,34 @@ public class InfectionCommand implements CommandExecutor, Listener {
      * 5. Imposters wrath
      */
 
+    // DOESNT REGISTER DEATH
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent e) {
         Player dead = e.getEntity();
+        System.out.println(dead.getName() + " has died!");
+        System.out.println(dead);
+        System.out.println(imposterList);
         for (Player player : imposterList) {
             // Alternate approach is to check if their get names strings match
             if (player.equals(dead)) {
                 // call a method if imposter
+                System.out.println("HII!!!, should run imposterDeath");
                 imposterDeath(dead);
                 return;
             }
         }
         // call a method if innocent
-        innocentDeath(dead);
+        System.out.println("ImposterDeath didn't run:(");
+        if (innocentList.contains(dead)) {
+            innocentDeath(dead);
+        }
     }
 
     public void imposterDeath(Player p) {
         p.setGameMode(GameMode.SPECTATOR);
         imposterList.remove(p);
+        System.out.println("Player " + p.getName() + " has died!");
+        System.out.println(imposterList);
         if (infected == 0 && imposterList.isEmpty()) {
             // allow them to choose a player to inherit the infection (imposter's wrath)
             p.sendMessage(ChatColor.RED + "Choose an imposter");
@@ -242,13 +295,15 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
     public void conversion(Player p) {
         // Might be a bit flawed - will this send them back and will the effects apply?
-        p.setRespawnLocation(p.getLocation());
+        //p.setRespawnLocation(p.getLocation());
 
         // make it so they are invincible and immobile during the conversion
         p.setHealth(20);
         p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,
                 30, 255, false, true));
         p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
+                30, 255, false, true));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,
                 30, 255, false, true));
         p.setSneaking(true);
 
@@ -257,13 +312,21 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
         // set to infected and join the imposter team
         imposterList.add(p);
+        innocentList.remove(p);
+        System.out.println("Conversion");
+        System.out.println(imposterList);
+        System.out.println(innocentList);
         infected++;
 
         // conversion lasts 30 seconds
+        scheduler.scheduleSyncDelayedTask(plugin, () ->
+                System.out.println("Waited 30 second?"), 600L);
+        /*
         try {
             Thread.sleep(30000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+         */
     }
 }
