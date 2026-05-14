@@ -11,6 +11,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jspecify.annotations.NonNull;
 
@@ -117,6 +118,15 @@ public class InfectionCommand implements CommandExecutor, Listener {
                 player.playSound(player.getLocation(), Sound.ENTITY_CREEPER_PRIMED,
                         10000f, 1f);
             }
+
+            // pause for 1 second
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    System.out.println("Executed after delay!");
+                }
+            }.runTaskLater(plugin, 20L);
+
             /*
             scheduler.scheduleSyncDelayedTask(plugin, new Runnable() {
                 @Override
@@ -131,14 +141,13 @@ public class InfectionCommand implements CommandExecutor, Listener {
                 }, 0L, 20L);
                 */
 
-
+            /*
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-
-
+             */
         }
 
 
@@ -187,6 +196,15 @@ public class InfectionCommand implements CommandExecutor, Listener {
         // Wait for dramatic effect
         scheduler.scheduleSyncDelayedTask(plugin, () ->
                 System.out.println("Waited 4 second?"), 80L);
+
+        // pause for 4 second (can anything else happen during this pause?)
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                System.out.println("Executed after delay!");
+            }
+        }.runTaskLater(plugin, 20L * 4);
+
         /*
         try {
             Thread.sleep(4000);
@@ -211,7 +229,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
      * 3. If an innocent, check if an imposter is near (or if the imposter damaged them)
      * and then begin the conversion (done?)
      * 4. Design the conversion (done?)
-     * 5. Imposters wrath
+     * 5. Imposters wrath (yet to implement)
      */
 
     // DOESNT REGISTER DEATH
@@ -321,6 +339,20 @@ public class InfectionCommand implements CommandExecutor, Listener {
         // conversion lasts 30 seconds
         scheduler.scheduleSyncDelayedTask(plugin, () ->
                 System.out.println("Waited 30 second?"), 600L);
+
+        // pause for 30 second
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                System.out.println("Executed after 30 seconds!");
+                p.setFreezeTicks(0);
+                p.removePotionEffect(PotionEffectType.SLOWNESS);
+                p.removePotionEffect(PotionEffectType.RESISTANCE);
+                p.removePotionEffect(PotionEffectType.REGENERATION);
+                p.setSneaking(true);
+            }
+        }.runTaskLater(plugin, 20L * 30);
+
         /*
         try {
             Thread.sleep(30000);
