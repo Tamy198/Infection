@@ -92,6 +92,9 @@ public class InfectionCommand implements CommandExecutor, Listener {
             return true;
         }
 
+        // Assign the imposters by randomly shuffling the player list and then the dividing
+        // the first part to the imposter team and the remainder to the innocent team
+        // SMTH TO TEST: DOES THIS MEAN THE FIRST NAMES ON THE TAB ARE IMPOSTERS??
         Collections.shuffle(players);
         this.imposterList = new ArrayList<>(players.subList(0, imposterAmount));
         this.innocentList = new ArrayList<>(players.subList(imposterAmount, players.size()));
@@ -194,9 +197,10 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }
 
         // Wait for dramatic effect
-        scheduler.scheduleSyncDelayedTask(plugin, () ->
-                System.out.println("Waited 4 second?"), 80L);
+        //scheduler.scheduleSyncDelayedTask(plugin, () ->
+                //System.out.println("Waited 4 second?"), 80L);
 
+        // Wait for dramatic effect
         // pause for 4 second (can anything else happen during this pause?)
         new BukkitRunnable() {
             @Override
@@ -232,7 +236,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
      * 5. Imposters wrath (yet to implement)
      */
 
-    // DOESNT REGISTER DEATH
+    // DOESNT REGISTER DEATH?
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent e) {
         Player dead = e.getEntity();
@@ -240,16 +244,16 @@ public class InfectionCommand implements CommandExecutor, Listener {
         System.out.println(dead);
         System.out.println(imposterList);
         for (Player player : imposterList) {
-            // Alternate approach is to check if their get names strings match
             if (player.equals(dead)) {
-                // call a method if imposter
+                // imposter death
                 System.out.println("HII!!!, should run imposterDeath");
                 imposterDeath(dead);
                 return;
             }
         }
-        // call a method if innocent
-        System.out.println("ImposterDeath didn't run:(");
+
+        // innocent death or conversion
+        System.out.println("ImposterDeath didn't run");
         if (innocentList.contains(dead)) {
             innocentDeath(dead);
         }
@@ -263,6 +267,8 @@ public class InfectionCommand implements CommandExecutor, Listener {
         if (infected == 0 && imposterList.isEmpty()) {
             // allow them to choose a player to inherit the infection (imposter's wrath)
             p.sendMessage(ChatColor.RED + "Choose an imposter");
+            // **TO IMPLEMENT**
+            // **Also need to implement conditions when it runs**
         }
     }
 
@@ -273,13 +279,11 @@ public class InfectionCommand implements CommandExecutor, Listener {
         */
 
         // Imposter coordinates
-        //Location locationImposter;
         double impX;
         double impY;
         double impZ;
 
         // Innocent coordinates
-        //Location locationInnocent = p.getLocation();
         double X = p.getLocation().getX();
         double Y = p.getLocation().getY();
         double Z = p.getLocation().getZ();
@@ -291,6 +295,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
         double distFromImp;
 
+        // Calculate distance of the player who died to the imposter
         for (Player player : imposterList) {
             impX = player.getLocation().getX();
             impY = player.getLocation().getY();
@@ -315,7 +320,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         // Might be a bit flawed - will this send them back and will the effects apply?
         //p.setRespawnLocation(p.getLocation());
 
-        // make it so they are invincible and immobile during the conversion
+        // During the conversion, the player will be invincible and immobile
         p.setHealth(20);
         p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,
                 30, 255, false, true));
@@ -325,10 +330,10 @@ public class InfectionCommand implements CommandExecutor, Listener {
                 30, 255, false, true));
         p.setSneaking(true);
 
-        // applies a freezing effect to the player
+        // Applies a freezing effect to the player
         p.setFreezeTicks(p.getMaxFreezeTicks());
 
-        // set to infected and join the imposter team
+        // Set to infected and join the imposter team
         imposterList.add(p);
         innocentList.remove(p);
         System.out.println("Conversion");
@@ -336,11 +341,11 @@ public class InfectionCommand implements CommandExecutor, Listener {
         System.out.println(innocentList);
         infected++;
 
-        // conversion lasts 30 seconds
+        // Conversion lasts 30 seconds
         scheduler.scheduleSyncDelayedTask(plugin, () ->
                 System.out.println("Waited 30 second?"), 600L);
 
-        // pause for 30 second
+        // Pause for 30 second
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -349,7 +354,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
                 p.removePotionEffect(PotionEffectType.SLOWNESS);
                 p.removePotionEffect(PotionEffectType.RESISTANCE);
                 p.removePotionEffect(PotionEffectType.REGENERATION);
-                p.setSneaking(true);
+                p.setSneaking(false);
             }
         }.runTaskLater(plugin, 20L * 30);
 
