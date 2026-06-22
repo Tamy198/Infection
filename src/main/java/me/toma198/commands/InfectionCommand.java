@@ -192,7 +192,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         String innocent = ChatColor.GREEN + "You are NOT the imposter:)";
         for (Player player : innocentList) {
             player.sendTitle(innocent, subtitle, 10, 70, 20);
-            //player.sendMessage("§aYou are innocent:)");
+            player.sendMessage("§aYou are innocent:)");
             //System.out.println(player.getName() + " is innocent");
         }
 
@@ -243,13 +243,21 @@ public class InfectionCommand implements CommandExecutor, Listener {
         System.out.println(dead.getName() + " has died!");
         System.out.println(dead);
         System.out.println(imposterList);
+
+        boolean imposter = false;
+        // see if the death is an imposter
         for (Player player : imposterList) {
             if (player.equals(dead)) {
                 // imposter death
+                imposter = true;
                 System.out.println("HII!!!, should run imposterDeath");
-                imposterDeath(dead);
-                return;
             }
+        }
+
+        // END the imposter
+        if (imposter) {
+            imposterDeath(dead);
+            return;
         }
 
         // innocent death or conversion
@@ -268,7 +276,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
             // allow them to choose a player to inherit the infection (imposter's wrath)
             p.sendMessage(ChatColor.RED + "Choose an imposter");
             // **TO IMPLEMENT**
-            // **Also need to implement conditions when it runs**
+            // **Also need to implement conditions for when it runs (no visible attempt)**
         }
     }
 
@@ -296,6 +304,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         double distFromImp;
 
         // Calculate distance of the player who died to the imposter
+        boolean activateConversion = false;
         for (Player player : imposterList) {
             impX = player.getLocation().getX();
             impY = player.getLocation().getY();
@@ -307,12 +316,18 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
             distFromImp = Math.sqrt(absX + absY + absZ);
 
+            // if within 30 blocks, conversion conditions are satisfied
             if (distFromImp <= 30) {
-                // if within 30 blocks, conversion
-                conversion(p);
+                activateConversion = true;
             }
         }
-        // else set to spectator
+
+        // if within 30 blocks, conversion
+        if (activateConversion) {
+            conversion(p);
+        }
+
+        // else set innocent to spectator
         p.setGameMode(GameMode.SPECTATOR);
     }
 
