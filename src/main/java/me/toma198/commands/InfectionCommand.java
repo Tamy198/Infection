@@ -11,8 +11,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -33,7 +31,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
     }
 
     // A scheduler for asynchronous waiting so the server doesn't sleep
-    BukkitScheduler scheduler = getServer().getScheduler();
+    //BukkitScheduler scheduler = getServer().getScheduler();
 
     // Accessing all the players online
     ArrayList<Player> players = new ArrayList<>();
@@ -62,7 +60,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
          * 5. Sounds (done)
          *
          * Potential problems/challenges:
-         * - Randomising the imposters
+         * - Randomizing the imposters
          * - Only picking the entered amount imposters
          */
 
@@ -111,7 +109,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }
         */
 
-        // Countdown (could make it sync later - like the last java series episode clocks)
+        // Countdown
         String title;
         String subtitle = "";
         for (int j = 3; j > 0; j--) {
@@ -123,12 +121,20 @@ public class InfectionCommand implements CommandExecutor, Listener {
             }
 
             // pause for 1 second
+            /*
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     System.out.println("Executed after delay!");
                 }
             }.runTaskLater(plugin, 20L);
+
+             */
+
+            // pause for 1 second
+            Bukkit.getScheduler().runTaskLater(plugin, () -> System.out.println("""
+                    Executed after delay! (or do I have to wait until \
+                    after this pause?"""), 20L);
 
             /*
             scheduler.scheduleSyncDelayedTask(plugin, new Runnable() {
@@ -158,7 +164,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         /*
         Random random = new Random();
         int count;
-        for (int i = 0; i < imposterAmount; i++) {
+        for (inti = 0; i < imposterAmount; i++) {
             // Removing the player number from player list to ensure no duplicates
             int imposter = playerNumberList.remove(random.nextInt(playerNumberList.size()));
 
@@ -202,12 +208,20 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
         // Wait for dramatic effect
         // pause for 4 second (can anything else happen during this pause?)
+        /*
         new BukkitRunnable() {
             @Override
             public void run() {
                 System.out.println("Executed after delay!");
             }
         }.runTaskLater(plugin, 20L * 4);
+         */
+
+        // Wait for dramatic effect
+        // pause for 4 second (can anything else happen during this pause?)
+        Bukkit.getScheduler().runTaskLater(plugin, () ->
+                System.out.println("Executed after delay! (or do I have to wait until " +
+                "after this pause?"), 600L);
 
         /*
         try {
@@ -356,11 +370,8 @@ public class InfectionCommand implements CommandExecutor, Listener {
         System.out.println(innocentList);
         infected++;
 
-        // Conversion lasts 30 seconds
-        scheduler.scheduleSyncDelayedTask(plugin, () ->
-                System.out.println("Waited 30 second?"), 600L);
-
         // Pause for 30 second
+        /*
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -372,6 +383,18 @@ public class InfectionCommand implements CommandExecutor, Listener {
                 p.setSneaking(false);
             }
         }.runTaskLater(plugin, 20L * 30);
+        */
+
+        // Conversion lasts 30 seconds
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            System.out.println("Executed after 30 seconds!");
+            p.setFreezeTicks(0);
+            p.removePotionEffect(PotionEffectType.SLOWNESS);
+            p.removePotionEffect(PotionEffectType.RESISTANCE);
+            p.removePotionEffect(PotionEffectType.REGENERATION);
+            p.setSneaking(false);
+            System.out.println("Waited 30 second?");
+        }, 600L);
 
         /*
         try {
