@@ -93,6 +93,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         // Assign the imposters by randomly shuffling the player list and then the dividing
         // the first part to the imposter team and the remainder to the innocent team
         // SMTH TO TEST: DOES THIS MEAN THE FIRST NAMES ON THE TAB ARE IMPOSTERS??
+        // **THE FIRST PERSON TO JOIN SEEMS TO BE THE IMPOSTER WHEN COMMAND IS FIRST RUN**
         Collections.shuffle(players);
         this.imposterList = new ArrayList<>(players.subList(0, imposterAmount));
         this.innocentList = new ArrayList<>(players.subList(imposterAmount, players.size()));
@@ -196,6 +197,10 @@ public class InfectionCommand implements CommandExecutor, Listener {
         for (Player player : imposterList) {
             player.sendMessage(imposterReveal.toString());
         }
+
+        System.out.println("Printing innocent and imposter list");
+        System.out.println(imposterList);
+        System.out.println(innocentList);
 
         return true;
     }
