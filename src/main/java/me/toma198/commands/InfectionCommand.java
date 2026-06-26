@@ -256,7 +256,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }
 
         // innocent death or conversion
-        System.out.println("HII!!!, should run innocentDeath + conversion");
+        System.out.println("HII!!!, should run innocentDeath and conversion");
         if (innocentList.contains(dead)) {
             innocentDeath(dead);
         }
@@ -315,6 +315,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         // if within 30 blocks, conversion
         if (activateConversion) {
             conversion(p);
+            return;
         }
 
         // else set innocent to spectator
@@ -335,11 +336,11 @@ public class InfectionCommand implements CommandExecutor, Listener {
         // During the conversion, the player will be invincible and immobile
         p.setHealth(20);
         p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,
-                30, 255, false, true));
+                600, 255, false, true));
         p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
-                30, 255, false, true));
+                600, 255, false, true));
         p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,
-                30, 255, false, true));
+                600, 255, false, true));
         p.setSneaking(true);
 
         // Applies a freezing effect to the player
