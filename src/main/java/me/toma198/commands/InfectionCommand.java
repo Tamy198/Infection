@@ -347,8 +347,16 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
     public void conversion(Player p) {
         // Might be a bit flawed - will this send them back and will the effects apply?
-        //p.setRespawnLocation(p.getLocation());
+        p.setRespawnLocation(p.getLocation());
 
+        /*
+        @EventHandler
+        public void onPlayerRespawn(PlayerRespawnEvent p) {
+
+        }
+        */
+        // **NEED TO MAKE THIS RUN UPON RESPAWN OR THERE IS NO RESPAWN HAPPENS**
+        // **FIRST TEST THEN TRY THESE IF DOESN'T WORK**
         // During the conversion, the player will be invincible and immobile
         p.setHealth(20);
         p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,
