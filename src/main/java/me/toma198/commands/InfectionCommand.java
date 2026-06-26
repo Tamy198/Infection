@@ -45,7 +45,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
     @Override
     public boolean onCommand(@NonNull CommandSender sender, @NonNull Command command,
-                             @NonNull String label, @NonNull String[] args) {
+                             @NonNull String label, @NonNull String @NonNull [] args) {
         if(!(sender instanceof Player)) {
             sender.sendMessage("§cOnly players can execute this command!");
             return true;
@@ -110,55 +110,38 @@ public class InfectionCommand implements CommandExecutor, Listener {
         */
 
         // Countdown
-        String title;
-        String subtitle = "";
-        for (int j = 3; j > 0; j--) {
-            title = ChatColor.GOLD + Integer.toString(j);
+        String title3 = ChatColor.GOLD + Integer.toString(3);
+        String title2 = ChatColor.GOLD + Integer.toString(2);
+        String title1 = ChatColor.GOLD + Integer.toString(1);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            printTitle(title3, players);
+            System.out.println("Executed after delay!");
+        }, 20L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            printTitle(title2, players);
+            System.out.println("Executed after delay!");
+        }, 20L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            printTitle(title1, players);
+            System.out.println("Executed after delay!");
+        }, 20L);
+
+        //for (int j = 3; j > 0; j--) {
+            //title = ChatColor.GOLD + Integer.toString(j);
+            //printTitle(title, players);
+            /*
             for (Player player : players) {
                 player.sendTitle(title, subtitle, 1, 6, 2);
                 player.playSound(player.getLocation(), Sound.ENTITY_CREEPER_PRIMED,
                         10000f, 1f);
             }
 
-            // pause for 1 second
-            /*
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    System.out.println("Executed after delay!");
-                }
-            }.runTaskLater(plugin, 20L);
-
-             */
-
-            // pause for 1 second
-            Bukkit.getScheduler().runTaskLater(plugin, () -> System.out.println("""
-                    Executed after delay! (or do I have to wait until \
-                    after this pause?"""), 20L);
-
-            /*
-            scheduler.scheduleSyncDelayedTask(plugin, new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("Waited 1 second?");
-                    for (Player player : players) {
-                        player.sendTitle(title, subtitle, 1, 6, 2);
-                        player.playSound(player.getLocation(), Sound.ENTITY_CREEPER_PRIMED,
-                                10000f, 1f);
-                    }
-                }
-                }, 0L, 20L);
-                */
-
-            /*
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-             */
+            // pause for 1 second (20 ticks)
+            // **BUG 1: THIS IS NOT PAUSING ON REPEAT**
+            //Bukkit.getScheduler().runTaskLater(plugin, ()
+            //        -> System.out.println("Executed after delay!"), 20L);
         }
-
+        */
 
         // Generating the random imposters
         /*
@@ -181,12 +164,13 @@ public class InfectionCommand implements CommandExecutor, Listener {
         */
 
         // Reveal the imposters to one another
-        String imposterReveal = "§cThe imposters are: ";
+        StringBuilder imposterReveal = new StringBuilder("§cThe imposters are: ");
         for (Player imposter : imposterList) {
-            imposterReveal += imposter.getName() + " ";
+            imposterReveal.append(imposter.getName()).append(" ");
         }
 
         // Inform imposters of their dubiousness
+        String subtitle = "";
         String imposterMessage = ChatColor.RED + "You are the imposter:)";
         for (Player player : imposterList) {
             player.sendTitle(imposterMessage, subtitle, 10, 70, 20);
@@ -199,44 +183,31 @@ public class InfectionCommand implements CommandExecutor, Listener {
         for (Player player : innocentList) {
             player.sendTitle(innocent, subtitle, 10, 70, 20);
             player.sendMessage("§aYou are innocent:)");
-            //System.out.println(player.getName() + " is innocent");
+            System.out.println(player.getName() + " is innocent");
         }
 
-        // Wait for dramatic effect
-        //scheduler.scheduleSyncDelayedTask(plugin, () ->
-                //System.out.println("Waited 4 second?"), 80L);
-
-        // Wait for dramatic effect
-        // pause for 4 second (can anything else happen during this pause?)
-        /*
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                System.out.println("Executed after delay!");
-            }
-        }.runTaskLater(plugin, 20L * 4);
-         */
-
-        // Wait for dramatic effect
-        // pause for 4 second (can anything else happen during this pause?)
+        // Wait 4 seconds for dramatic effect
+        // **CAN ANYTHING HAPPEN DURING THE PAUSE??**
+        // Note to self: THE PAUSES ARE WORKING HERE
         Bukkit.getScheduler().runTaskLater(plugin, () ->
-                System.out.println("Executed after delay! (or do I have to wait until " +
-                "after this pause?"), 600L);
-
-        /*
-        try {
-            Thread.sleep(4000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-         */
+                System.out.println("Executed after 4 second delay!"), 80L);
 
         // Then reveal message sent to imposters
         for (Player player : imposterList) {
-            player.sendMessage(imposterReveal);
+            player.sendMessage(imposterReveal.toString());
         }
 
         return true;
+    }
+
+    // print a title with default configurations
+    void printTitle(String title, ArrayList<Player> players) {
+        String subtitle = "";
+        for (Player player : players) {
+            player.sendTitle(title, subtitle, 1, 6, 2);
+            player.playSound(player.getLocation(), Sound.ENTITY_CREEPER_PRIMED,
+                    10000f, 1f);
+        }
     }
 
     /* * Step 2. Design the infection mechanic
@@ -250,7 +221,12 @@ public class InfectionCommand implements CommandExecutor, Listener {
      * 5. Imposters wrath (yet to implement)
      */
 
-    // DOESNT REGISTER DEATH?
+    /** 3 BUGS:
+     * 1. Countdown
+     * 2. Respawning/spectator mode
+     * 3. Disconnecting and reconnecting
+     */
+
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent e) {
         Player dead = e.getEntity();
@@ -275,7 +251,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }
 
         // innocent death or conversion
-        System.out.println("ImposterDeath didn't run");
+        System.out.println("HII!!!, should run innocentDeath + conversion");
         if (innocentList.contains(dead)) {
             innocentDeath(dead);
         }
@@ -295,11 +271,6 @@ public class InfectionCommand implements CommandExecutor, Listener {
     }
 
     public void innocentDeath(Player p) {
-        /*3. Check if an imposter is near (or if the imposter damaged them)
-        * and then begin the conversion
-        * 4. Design the conversion
-        */
-
         // Imposter coordinates
         double impX;
         double impY;
@@ -346,17 +317,16 @@ public class InfectionCommand implements CommandExecutor, Listener {
     }
 
     public void conversion(Player p) {
-        // Might be a bit flawed - will this send them back and will the effects apply?
+        // Send them back the next tick after they die
         p.setRespawnLocation(p.getLocation());
+        //Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            //p.spigot().respawn();
+        //}, 1L);
+        p.spigot().respawn();
 
-        /*
-        @EventHandler
-        public void onPlayerRespawn(PlayerRespawnEvent p) {
-
-        }
-        */
-        // **NEED TO MAKE THIS RUN UPON RESPAWN OR THERE IS NO RESPAWN HAPPENS**
-        // **FIRST TEST THEN TRY THESE IF DOESN'T WORK**
+        // ** BUG 2: THE RESPAWNING IS THE MAIN BUG**
+        // ** THEY CANNOT RESPAWN DURING THE WAIT
+        // ** NEED TO MAKE THIS RUN UPON RESPAWN OR THERE IS NO RESPAWN HAPPENS **
         // During the conversion, the player will be invincible and immobile
         p.setHealth(20);
         p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,
@@ -371,6 +341,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         p.setFreezeTicks(p.getMaxFreezeTicks());
 
         // Set to infected and join the imposter team
+        // **NOTE TO SELF AFTER TESTING: THIS IS RUNNING AND EVERYTHING IS PRINTING**
         imposterList.add(p);
         innocentList.remove(p);
         System.out.println("Conversion");
@@ -378,22 +349,8 @@ public class InfectionCommand implements CommandExecutor, Listener {
         System.out.println(innocentList);
         infected++;
 
-        // Pause for 30 second
-        /*
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                System.out.println("Executed after 30 seconds!");
-                p.setFreezeTicks(0);
-                p.removePotionEffect(PotionEffectType.SLOWNESS);
-                p.removePotionEffect(PotionEffectType.RESISTANCE);
-                p.removePotionEffect(PotionEffectType.REGENERATION);
-                p.setSneaking(false);
-            }
-        }.runTaskLater(plugin, 20L * 30);
-        */
-
         // Conversion lasts 30 seconds
+        // Note to self: THE PAUSES ARE WORKING HERE
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             System.out.println("Executed after 30 seconds!");
             p.setFreezeTicks(0);
@@ -403,13 +360,5 @@ public class InfectionCommand implements CommandExecutor, Listener {
             p.setSneaking(false);
             System.out.println("Waited 30 second?");
         }, 600L);
-
-        /*
-        try {
-            Thread.sleep(30000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-         */
     }
 }
