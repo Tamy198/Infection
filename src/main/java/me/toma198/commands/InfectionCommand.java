@@ -117,15 +117,15 @@ public class InfectionCommand implements CommandExecutor, Listener {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             printTitle(title3, players);
             System.out.println("Executed after delay!");
-        }, 20L);
+        }, 60L);
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             printTitle(title2, players);
             System.out.println("Executed after delay!");
-        }, 20L);
+        }, 60L);
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             printTitle(title1, players);
             System.out.println("Executed after delay!");
-        }, 20L);
+        }, 60L);
 
         //for (int j = 3; j > 0; j--) {
             //title = ChatColor.GOLD + Integer.toString(j);
@@ -198,7 +198,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
             player.sendMessage(imposterReveal.toString());
         }
 
-        System.out.println("Printing innocent and imposter list");
+        System.out.println("Printing imposter and innocent list");
         System.out.println(imposterList);
         System.out.println(innocentList);
 
@@ -324,10 +324,10 @@ public class InfectionCommand implements CommandExecutor, Listener {
     public void conversion(Player p) {
         // Send them back the next tick after they die
         p.setRespawnLocation(p.getLocation());
-        //Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            //p.spigot().respawn();
-        //}, 1L);
-        p.spigot().respawn();
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            p.spigot().respawn();
+        }, 1L);
+        //p.spigot().respawn();
 
         // ** BUG 2: THE RESPAWNING IS THE MAIN BUG**
         // ** THEY CANNOT RESPAWN DURING THE WAIT
