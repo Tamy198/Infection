@@ -112,55 +112,6 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }
         */
 
-        // Countdown
-        String title3 = ChatColor.GOLD + Integer.toString(3);
-        String title2 = ChatColor.GOLD + Integer.toString(2);
-        String title1 = ChatColor.GOLD + Integer.toString(1);
-
-        // 1-second delay
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            printTitle(title3, players);
-            for (Player player : players) {
-                player.playSound(player.getLocation(), Sound.ENTITY_CAT_HISS, 10000f, 1f);
-            }
-            System.out.println("Executed after delay!");
-        }, 20L);
-
-        // 2-second delay
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            printTitle(title2, players);
-            for (Player player : players) {
-                player.playSound(player.getLocation(), Sound.ENTITY_CAT_HISS, 10000f, 1f);
-            }
-            System.out.println("Executed after delay!");
-        }, 40L);
-
-        // 3-second delay
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            printTitle(title1, players);
-            for (Player player : players) {
-                player.playSound(player.getLocation(), Sound.ENTITY_CAT_HISS, 10000f, 1f);
-            }
-            System.out.println("Executed after delay!");
-        }, 60L);
-
-        //for (int j = 3; j > 0; j--) {
-            //title = ChatColor.GOLD + Integer.toString(j);
-            //printTitle(title, players);
-            /*
-            for (Player player : players) {
-                player.sendTitle(title, subtitle, 1, 6, 2);
-                player.playSound(player.getLocation(), Sound.ENTITY_CREEPER_PRIMED,
-                        10000f, 1f);
-            }
-
-            // pause for 1 second (20 ticks)
-            // **BUG 1: THIS IS NOT PAUSING ON REPEAT**
-            //Bukkit.getScheduler().runTaskLater(plugin, ()
-            //        -> System.out.println("Executed after delay!"), 20L);
-        }
-        */
-
         // Generating the random imposters
         /*
         Random random = new Random();
@@ -181,6 +132,37 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }
         */
 
+        // Countdown
+        String title3 = ChatColor.GOLD + Integer.toString(3);
+        String title2 = ChatColor.GOLD + Integer.toString(2);
+        String title1 = ChatColor.GOLD + Integer.toString(1);
+
+        // no delay
+        printTitle(title3, players);
+        for (Player player : players) {
+            player.playSound(player.getLocation(), Sound.ENTITY_CAT_HISS, 10000f, 1f);
+        }
+        System.out.println("Executed after delay!");
+
+        // 1-second delay
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            printTitle(title2, players);
+            for (Player player : players) {
+                player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_CLUSTER_BREAK, 10000f, 1f);
+            }
+            System.out.println("Executed after delay!");
+        }, 20L);
+
+        // 2-second delay
+        //Sound.ENTITY_ENDERMAN_AMBIENT
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            printTitle(title1, players);
+            for (Player player : players) {
+                player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_CLUSTER_BREAK, 10000f, 1f);
+            }
+            System.out.println("Executed after delay!");
+        }, 40L);
+
         // Wait an additional second to reveal roles
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             // Inform imposters of their dubiousness
@@ -197,16 +179,22 @@ public class InfectionCommand implements CommandExecutor, Listener {
             for (Player player : innocentList) {
                 player.sendTitle(innocent, subtitle, 10, 70, 20);
                 player.sendMessage("§aYou are innocent:)");
-                System.out.println(player.getName() + " is innocent");
+                player.playSound(player.getLocation(), Sound.ITEM_GOAT_HORN_SOUND_0, 10000f, 1f);
             }
-        }, 80L);
+        }, 60L);
 
         // Wait 4 seconds - from the additional 4 from earlier - for dramatic effect
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             // Reveal the imposters to one another
             StringBuilder imposterReveal = new StringBuilder("§cThe imposters are: ");
+            int imposterCount = 0;
             for (Player imposter : imposterList) {
-                imposterReveal.append(imposter.getName()).append(" ");
+                imposterCount++;
+                if  (imposterCount == imposterList.size()) {
+                    imposterReveal.append(imposter.getName()).append(", ");
+                } else {
+                    imposterReveal.append(imposter.getName());
+                }
             }
 
             // Then send the reveal message to imposters
@@ -214,7 +202,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
                 player.sendMessage(imposterReveal.toString());
             }
             System.out.println("Executed after 4 second delay!");
-        }, 160L);
+        }, 140L);
 
         System.out.println("Printing imposter and innocent list");
         System.out.println(imposterList);
@@ -244,8 +232,8 @@ public class InfectionCommand implements CommandExecutor, Listener {
      * 5. Imposters wrath (yet to implement)
      */
 
-    /** 6 BUGS:
-     * 1. Countdown
+    /** BUGS:
+     * 1. Countdown (fixed)
      * 2. Respawning
      * 3. Invincible after conversion
      * 4. No freezing effect
