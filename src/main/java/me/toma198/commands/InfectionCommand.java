@@ -93,7 +93,9 @@ public class InfectionCommand implements CommandExecutor, Listener {
         // Assign the imposters by randomly shuffling the player list and then the dividing
         // the first part to the imposter team and the remainder to the innocent team
         // SMTH TO TEST: DOES THIS MEAN THE FIRST NAMES ON THE TAB ARE IMPOSTERS??
-        // **THE FIRST PERSON TO JOIN SEEMS TO BE THE IMPOSTER WHEN COMMAND IS FIRST RUN**
+        // ** THE FIRST PERSON TO JOIN SEEMS TO BE THE IMPOSTER WHEN COMMAND IS FIRST RUN?? **
+        // ** ACTUALLY NOT ALWAYS MAYBE IT WAS THE 50/50 CHANCE **
+        // ** NEED TO TEST
         Collections.shuffle(players);
         this.imposterList = new ArrayList<>(players.subList(0, imposterAmount));
         this.innocentList = new ArrayList<>(players.subList(imposterAmount, players.size()));
@@ -114,16 +116,31 @@ public class InfectionCommand implements CommandExecutor, Listener {
         String title3 = ChatColor.GOLD + Integer.toString(3);
         String title2 = ChatColor.GOLD + Integer.toString(2);
         String title1 = ChatColor.GOLD + Integer.toString(1);
+
+        // 1-second delay
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             printTitle(title3, players);
+            for (Player player : players) {
+                player.playSound(player.getLocation(), Sound.ENTITY_CAT_HISS, 10000f, 1f);
+            }
             System.out.println("Executed after delay!");
-        }, 60L);
+        }, 20L);
+
+        // 2-second delay
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             printTitle(title2, players);
+            for (Player player : players) {
+                player.playSound(player.getLocation(), Sound.ENTITY_CAT_HISS, 10000f, 1f);
+            }
             System.out.println("Executed after delay!");
-        }, 60L);
+        }, 40L);
+
+        // 3-second delay
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             printTitle(title1, players);
+            for (Player player : players) {
+                player.playSound(player.getLocation(), Sound.ENTITY_CAT_HISS, 10000f, 1f);
+            }
             System.out.println("Executed after delay!");
         }, 60L);
 
@@ -164,39 +181,40 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }
         */
 
-        // Reveal the imposters to one another
-        StringBuilder imposterReveal = new StringBuilder("§cThe imposters are: ");
-        for (Player imposter : imposterList) {
-            imposterReveal.append(imposter.getName()).append(" ");
-        }
+        // Wait an additional second to reveal roles
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            // Inform imposters of their dubiousness
+            String subtitle = "";
+            String imposterMessage = ChatColor.RED + "You are the imposter:)";
+            for (Player player : imposterList) {
+                player.sendTitle(imposterMessage, subtitle, 10, 70, 20);
+                player.sendMessage("§cYou are the imposter, infect the innocents:)");
+                player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 10000f, 1f);
+            }
 
-        // Inform imposters of their dubiousness
-        String subtitle = "";
-        String imposterMessage = ChatColor.RED + "You are the imposter:)";
-        for (Player player : imposterList) {
-            player.sendTitle(imposterMessage, subtitle, 10, 70, 20);
-            player.sendMessage("§cYou are the imposter, infect the innocents:)");
-            player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 10000f, 1f);
-        }
+            // Inform innocents of their innocence
+            String innocent = ChatColor.GREEN + "You are NOT the imposter:)";
+            for (Player player : innocentList) {
+                player.sendTitle(innocent, subtitle, 10, 70, 20);
+                player.sendMessage("§aYou are innocent:)");
+                System.out.println(player.getName() + " is innocent");
+            }
+        }, 80L);
 
-        // Inform innocents of their innocence
-        String innocent = ChatColor.GREEN + "You are NOT the imposter:)";
-        for (Player player : innocentList) {
-            player.sendTitle(innocent, subtitle, 10, 70, 20);
-            player.sendMessage("§aYou are innocent:)");
-            System.out.println(player.getName() + " is innocent");
-        }
+        // Wait 4 seconds - from the additional 4 from earlier - for dramatic effect
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            // Reveal the imposters to one another
+            StringBuilder imposterReveal = new StringBuilder("§cThe imposters are: ");
+            for (Player imposter : imposterList) {
+                imposterReveal.append(imposter.getName()).append(" ");
+            }
 
-        // Wait 4 seconds for dramatic effect
-        // **CAN ANYTHING HAPPEN DURING THE PAUSE??**
-        // Note to self: THE PAUSES ARE WORKING HERE
-        Bukkit.getScheduler().runTaskLater(plugin, () ->
-                System.out.println("Executed after 4 second delay!"), 80L);
-
-        // Then reveal message sent to imposters
-        for (Player player : imposterList) {
-            player.sendMessage(imposterReveal.toString());
-        }
+            // Then send the reveal message to imposters
+            for (Player player : imposterList) {
+                player.sendMessage(imposterReveal.toString());
+            }
+            System.out.println("Executed after 4 second delay!");
+        }, 160L);
 
         System.out.println("Printing imposter and innocent list");
         System.out.println(imposterList);
@@ -226,10 +244,13 @@ public class InfectionCommand implements CommandExecutor, Listener {
      * 5. Imposters wrath (yet to implement)
      */
 
-    /** 3 BUGS:
+    /** 6 BUGS:
      * 1. Countdown
-     * 2. Respawning/spectator mode
-     * 3. Disconnecting and reconnecting
+     * 2. Respawning
+     * 3. Invincible after conversion
+     * 4. No freezing effect
+     * 5. Dead player doesn't sync with the world after conversion
+     * 6. Joining order effect who becomes imposter?
      */
 
     @EventHandler
@@ -344,6 +365,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         p.setSneaking(true);
 
         // Applies a freezing effect to the player
+        // **NO FREEZING**
         p.setFreezeTicks(p.getMaxFreezeTicks());
 
         // Set to infected and join the imposter team
