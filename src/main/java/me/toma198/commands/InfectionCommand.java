@@ -348,17 +348,17 @@ public class InfectionCommand implements CommandExecutor, Listener {
     public void conversion(Player p) {
         // During the conversion, the player will be invincible and immobile
         p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,
-                Integer.MAX_VALUE, 255, false, true));
+                600, 255, false, false));
         p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
-                Integer.MAX_VALUE, 255, false, true));
+                600, 255, false, false));
         p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,
-                Integer.MAX_VALUE, 255, false, true));
-        p.setSneaking(true);
+                600, 255, false, false));
 
         // Applies a freezing effect to the player
-        p.setFreezeTicks(p.getMaxFreezeTicks());
         p.playSound(p.getLocation(), Sound.ENTITY_CREAKING_FREEZE,
                 10000f, 1f);
+        // boolean freezing = true;
+        p.setFreezeTicks(p.getMaxFreezeTicks());
 
         // Set to infected and join the imposter team
         imposterList.add(p);
@@ -375,7 +375,6 @@ public class InfectionCommand implements CommandExecutor, Listener {
             p.removePotionEffect(PotionEffectType.SLOWNESS);
             p.removePotionEffect(PotionEffectType.RESISTANCE);
             p.removePotionEffect(PotionEffectType.REGENERATION);
-            p.setSneaking(false);
             System.out.println("Waited 30 second?");
         }, 600L);
     }
