@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -30,10 +31,10 @@ public class InfectionCommand implements CommandExecutor, Listener {
         this.plugin = plugin;
     }
 
-    // A scheduler for asynchronous waiting so the server doesn't sleep
-    //BukkitScheduler scheduler = getServer().getScheduler();
-
     // Accessing all the players online
+    // ** SHOULD I JUST DO THIS BY CALLING BUKKIT.ONLINEPLAYERS EVERYTIME **
+    // ** RATHER THAN STORING **
+    // ** AND USING UUID RATHER THAN PLAYER OBJECTS **
     ArrayList<Player> players = new ArrayList<>();
 
     // Imposter and innocent list
@@ -42,6 +43,9 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
     // How many people have been infected during the game
     int infected = 0;
+
+    // The list of people who should be converted
+    ArrayList<Player> conversionList = new ArrayList<>();
 
     @Override
     public boolean onCommand(@NonNull CommandSender sender, @NonNull Command command,
@@ -139,27 +143,17 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
         // no delay
         printTitle(title3, players);
-        for (Player player : players) {
-            player.playSound(player.getLocation(), Sound.ENTITY_CAT_HISS, 10000f, 1f);
-        }
         System.out.println("Executed after delay!");
 
         // 1-second delay
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             printTitle(title2, players);
-            for (Player player : players) {
-                player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_CLUSTER_BREAK, 10000f, 1f);
-            }
             System.out.println("Executed after delay!");
         }, 20L);
 
         // 2-second delay
-        //Sound.ENTITY_ENDERMAN_AMBIENT
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             printTitle(title1, players);
-            for (Player player : players) {
-                player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_CLUSTER_BREAK, 10000f, 1f);
-            }
             System.out.println("Executed after delay!");
         }, 40L);
 
@@ -190,10 +184,10 @@ public class InfectionCommand implements CommandExecutor, Listener {
             int imposterCount = 0;
             for (Player imposter : imposterList) {
                 imposterCount++;
-                if  (imposterCount == imposterList.size()) {
-                    imposterReveal.append(imposter.getName()).append(", ");
-                } else {
+                if (imposterCount == imposterList.size()) {
                     imposterReveal.append(imposter.getName());
+                } else {
+                    imposterReveal.append(imposter.getName()).append(", ");
                 }
             }
 
@@ -211,11 +205,13 @@ public class InfectionCommand implements CommandExecutor, Listener {
         return true;
     }
 
-    // print a title with default configurations
+    // Print a title with default configurations
     void printTitle(String title, ArrayList<Player> players) {
         String subtitle = "";
         for (Player player : players) {
             player.sendTitle(title, subtitle, 1, 6, 2);
+            player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_CLUSTER_BREAK,
+                    10000f, 1f);
             player.playSound(player.getLocation(), Sound.ENTITY_CREEPER_PRIMED,
                     10000f, 1f);
         }
@@ -276,11 +272,16 @@ public class InfectionCommand implements CommandExecutor, Listener {
         imposterList.remove(p);
         System.out.println("Player " + p.getName() + " has died!");
         System.out.println(imposterList);
+
         if (infected == 0 && imposterList.isEmpty()) {
             // allow them to choose a player to inherit the infection (imposter's wrath)
             p.sendMessage(ChatColor.RED + "Choose an imposter");
             // **TO IMPLEMENT**
             // **Also need to implement conditions for when it runs (no visible attempt)**
+        } else if (imposterList.isEmpty()) {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                player.sendMessage(ChatColor.GREEN + "Innocents have won!");
+            }
         }
     }
 
@@ -318,32 +319,50 @@ public class InfectionCommand implements CommandExecutor, Listener {
             // if within 30 blocks, conversion conditions are satisfied
             if (distFromImp <= 30) {
                 activateConversion = true;
+                conversionList.add(p);
             }
         }
 
         // if within 30 blocks, conversion
+        /*
         if (activateConversion) {
             conversion(p);
             return;
         }
+         */
 
         // else set innocent to spectator
-        p.setGameMode(GameMode.SPECTATOR);
+        if (!activateConversion) {
+            p.setGameMode(GameMode.SPECTATOR);
+        }
+
+        // Activate a respawn event a tick later
+        Bukkit.getScheduler().runTaskLater(plugin, () -> p.spigot().respawn(), 1L);
+    }
+
+    // Run conversion if necessary upon respawn
+    @EventHandler
+    public void onPlayerRespawn(PlayerRespawnEvent e) {
+        Player p = e.getPlayer();
+
+        if (conversionList.contains(p)) {
+            conversionList.remove(p);
+            conversion(p);
+        }
     }
 
     public void conversion(Player p) {
         // Send them back the next tick after they die
-        p.setRespawnLocation(p.getLocation());
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            p.spigot().respawn();
-        }, 1L);
+        //p.setRespawnLocation(p.getLocation());
+        //Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            //p.spigot().respawn();
+        //}, 1L);
         //p.spigot().respawn();
 
         // ** BUG 2: THE RESPAWNING IS THE MAIN BUG**
         // ** THEY CANNOT RESPAWN DURING THE WAIT
         // ** NEED TO MAKE THIS RUN UPON RESPAWN OR THERE IS NO RESPAWN HAPPENS **
         // During the conversion, the player will be invincible and immobile
-        p.setHealth(20);
         p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,
                 600, 255, false, true));
         p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
@@ -355,9 +374,10 @@ public class InfectionCommand implements CommandExecutor, Listener {
         // Applies a freezing effect to the player
         // **NO FREEZING**
         p.setFreezeTicks(p.getMaxFreezeTicks());
+        p.playSound(p.getLocation(), Sound.ENTITY_CREAKING_FREEZE,
+                10000f, 1f);
 
         // Set to infected and join the imposter team
-        // **NOTE TO SELF AFTER TESTING: THIS IS RUNNING AND EVERYTHING IS PRINTING**
         imposterList.add(p);
         innocentList.remove(p);
         System.out.println("Conversion");
@@ -366,7 +386,6 @@ public class InfectionCommand implements CommandExecutor, Listener {
         infected++;
 
         // Conversion lasts 30 seconds
-        // Note to self: THE PAUSES ARE WORKING HERE
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             System.out.println("Executed after 30 seconds!");
             p.setFreezeTicks(0);
