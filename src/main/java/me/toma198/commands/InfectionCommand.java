@@ -230,10 +230,10 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
     /** BUGS:
      * 1. Countdown (fixed)
-     * 2. Respawning
-     * 3. Invincible after conversion
-     * 4. No freezing effect
-     * 5. Dead player doesn't sync with the world after conversion
+     * 2. Respawning (not instant)
+     * 3. Invincible after conversion (fixed)
+     * 4. No effects after death/no instant respawn
+     * 5. Dead player doesn't sync with the world after conversion (fixed)
      * 6. Joining order effect who becomes imposter?
      */
 
@@ -323,20 +323,14 @@ public class InfectionCommand implements CommandExecutor, Listener {
             }
         }
 
-        // if within 30 blocks, conversion
-        /*
-        if (activateConversion) {
-            conversion(p);
-            return;
-        }
-         */
-
         // else set innocent to spectator
         if (!activateConversion) {
             p.setGameMode(GameMode.SPECTATOR);
         }
 
         // Activate a respawn event a tick later
+        // ** DID THIS CHANGE LEAD TO BUGS?? **
+        p.setRespawnLocation(p.getLocation());
         Bukkit.getScheduler().runTaskLater(plugin, () -> p.spigot().respawn(), 1L);
     }
 
@@ -352,27 +346,16 @@ public class InfectionCommand implements CommandExecutor, Listener {
     }
 
     public void conversion(Player p) {
-        // Send them back the next tick after they die
-        //p.setRespawnLocation(p.getLocation());
-        //Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            //p.spigot().respawn();
-        //}, 1L);
-        //p.spigot().respawn();
-
-        // ** BUG 2: THE RESPAWNING IS THE MAIN BUG**
-        // ** THEY CANNOT RESPAWN DURING THE WAIT
-        // ** NEED TO MAKE THIS RUN UPON RESPAWN OR THERE IS NO RESPAWN HAPPENS **
         // During the conversion, the player will be invincible and immobile
         p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,
-                600, 255, false, true));
+                Integer.MAX_VALUE, 255, false, true));
         p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
-                600, 255, false, true));
+                Integer.MAX_VALUE, 255, false, true));
         p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,
-                600, 255, false, true));
+                Integer.MAX_VALUE, 255, false, true));
         p.setSneaking(true);
 
         // Applies a freezing effect to the player
-        // **NO FREEZING**
         p.setFreezeTicks(p.getMaxFreezeTicks());
         p.playSound(p.getLocation(), Sound.ENTITY_CREAKING_FREEZE,
                 10000f, 1f);
