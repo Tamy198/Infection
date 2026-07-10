@@ -230,11 +230,12 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
     /** BUGS:
      * 1. Countdown (fixed)
-     * 2. Respawning (need game rule not fixed instant)
+     * 2. Respawning (doesn't respawn in correct position)
      * 3. Invincible after conversion (fixed)
-     * 4. No effects or freezing after death
-     * 5. Dead player doesn't sync with the world after conversion (fixed)
-     * 6. Joining order effect who becomes imposter?
+     * 4. No effects after death (fixed)
+     * 5. No continuous freezing after death
+     * 6. Dead player doesn't sync with the world after conversion (fixed)
+     * 7. Joining order effect who becomes imposter?
      */
 
     @EventHandler
@@ -329,9 +330,8 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }
 
         // Activate a respawn event a tick later
-        // ** DOESN'T WORK?? **
+        // ** DOESN'T WORK - RESPAWNS WRONG POSITION **
         p.setRespawnLocation(p.getLocation());
-        // ** NEED GAME RULE?? **
         Bukkit.getScheduler().runTaskLater(plugin, () -> p.spigot().respawn(), 1L);
     }
 
@@ -348,16 +348,6 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
     public void conversion(Player p) {
         // During the conversion, the player will be invincible and immobile
-        // ** NO EFFECTS **
-        /*
-        p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,
-                600, 255, false, false));
-        p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
-                600, 255, false, false));
-        p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,
-                600, 255, false, false));
-         */
-
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,
                     600, 255, true, true));
@@ -368,9 +358,6 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }, 1L);
 
         // Applies a freezing effect to the player
-        // ** ONLY LASTS FOR A LIMITED WINDOW **
-        p.playSound(p.getLocation(), Sound.ENTITY_CREAKING_FREEZE,
-                10000f, 1f);
         /*boolean freezing = true;
         while (freezing) {
             p.setFreezeTicks(p.getMaxFreezeTicks());
@@ -381,10 +368,13 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }*/
 
         // Apply freezing effect for 30 seconds
+        // ** ONLY LASTS FOR A LIMITED WINDOW **
+        p.playSound(p.getLocation(), Sound.ENTITY_CREAKING_FREEZE,
+                10000f, 1f);
         p.setFreezeTicks(p.getMaxFreezeTicks());
+        // apply freezing every tick
         for (int i = 0; i < 30; i++) {
-            Bukkit.getScheduler().runTaskLater(plugin, () ->
-                    p.setFreezeTicks(p.getMaxFreezeTicks()), 1L);
+            freezing(p);
         }
 
         // Set to infected and join the imposter team
@@ -403,5 +393,11 @@ public class InfectionCommand implements CommandExecutor, Listener {
             p.removePotionEffect(PotionEffectType.REGENERATION);
             System.out.println("Waited 30 second?");
         }, 600L);
+    }
+
+    void
+    freezing(Player p) {
+        Bukkit.getScheduler().runTaskLater(plugin, () ->
+                p.setFreezeTicks(p.getMaxFreezeTicks()), 1L);
     }
 }
