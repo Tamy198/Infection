@@ -350,7 +350,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
         // Activate a respawn event a tick later
         // ** DOESN'T WORK - RESPAWNS WRONG POSITION **
-        p.setRespawnLocation(p.getLocation());
+        //p.setRespawnLocation(p.getLocation());
         Bukkit.getScheduler().runTaskLater(plugin, () -> p.spigot().respawn(), 1L);
     }
 
@@ -368,6 +368,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
     }
 
     public void conversion(Player p) {
+        // ** THEY CAN STILL BE PUNCHED **
         // During the conversion, the player will be invincible and immobile
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,
