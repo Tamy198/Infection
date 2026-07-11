@@ -15,3 +15,7 @@ commands:
     description: Tells the server the current player count, allowing the infection to start
   infection:
     description: Starts the game of infection by assigning players
+  nameTagsOn:
+    description: Turns name tags off for all players
+  nameTagsOff:
+    description: Turns name tags on for all players
