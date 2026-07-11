@@ -136,15 +136,64 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }
         */
 
-        // Countdown
+        // Titles for countdown
         String title3 = ChatColor.GOLD + Integer.toString(3);
         String title2 = ChatColor.GOLD + Integer.toString(2);
         String title1 = ChatColor.GOLD + Integer.toString(1);
 
-        // no delay
+        // Countdown and imposter reveal
         printTitle(title3, players);
-        System.out.println("Executed after delay!");
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            printTitle(title2, players);
+            System.out.println("Executed after delay!");
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                printTitle(title1, players);
 
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    // Inform imposters of their dubiousness
+                    String subtitle = "";
+                    String imposterMessage = ChatColor.RED + "You are the imposter:)";
+                    for (Player player : imposterList) {
+                        player.sendTitle(imposterMessage, subtitle, 10, 70, 20);
+                        player.sendMessage("§cYou are the imposter, infect the innocents:)");
+                        player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 10000f,
+                                1f);
+                    }
+
+                    // Inform innocents of their innocence
+                    String innocent = ChatColor.GREEN + "You are NOT the imposter:)";
+                    for (Player player : innocentList) {
+                        player.sendTitle(innocent, subtitle, 10, 70, 20);
+                        player.sendMessage("§aYou are innocent:)");
+                        player.playSound(player.getLocation(), Sound.ITEM_GOAT_HORN_SOUND_0,
+                                10000f, 1f);
+                    }
+                    System.out.println("Executed after delay!");
+
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        // Reveal the imposters to one another
+                        StringBuilder imposterReveal = new StringBuilder("§cThe imposters are: ");
+                        int imposterCount = 0;
+                        for (Player imposter : imposterList) {
+                            imposterCount++;
+                            if (imposterCount == imposterList.size()) {
+                                imposterReveal.append(imposter.getName());
+                            } else {
+                                imposterReveal.append(imposter.getName()).append(", ");
+                            }
+                        }
+
+                        // Then send the reveal message to imposters
+                        for (Player player : imposterList) {
+                            player.sendMessage(imposterReveal.toString());
+                        }
+                        System.out.println("Executed after 4 second delay!");
+                    }, 80L);
+                }, 20L);
+            }, 20L);
+        }, 20L);
+
+        /*
         // 1-second delay
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             printTitle(title2, players);
@@ -197,6 +246,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
             }
             System.out.println("Executed after 4 second delay!");
         }, 140L);
+         */
 
         System.out.println("Printing imposter and innocent list");
         System.out.println(imposterList);
@@ -217,6 +267,27 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }
     }
 
+    // Hide the nametags of all players
+    /*
+    void
+    hide_nametags() {
+        Scoreboard board = null;
+        Team hidden = board.getTeam("hidden");
+        if (hidden == null) {
+            hidden = board.registerNewTeam("hidden");
+        }
+
+        hidden.setOption(
+                Team.Option.NAME_TAG_VISIBILITY,
+                Team.OptionStatus.NEVER
+        );
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            hidden.addEntry(player.getName());
+        }
+    }
+     */
+
     /* * Step 2. Design the infection mechanic
      * (if a death is within 30 blocks of imposter, conversion begins)
      *
@@ -229,15 +300,15 @@ public class InfectionCommand implements CommandExecutor, Listener {
      */
 
     /** BUGS/FIXES:
-     * 1. Imposter wrath (command)
-     * 2. Respawning (doesn't respawn in correct position)
+     * 1. Imposter wrath (command + yet to test)
+     * 2. Respawning (fixed)
      * 3. Invincible after conversion (fixed)
      * 4. No effects after death (fixed)
      * 5. Countdown (fixed)
      * 6. No continuous freezing after death
      * 7. Dead player doesn't sync with the world after conversion (fixed)
-     * 8. Joining order effect who becomes imposter?
-     * 9. God class
+     * 8. God class
+     * 9. Hide name tags for EVERYONE and hide death messages for INNOCENTS
      */
 
     @EventHandler
@@ -350,7 +421,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
         // Activate a respawn event a tick later
         // ** DOESN'T WORK - RESPAWNS WRONG POSITION **
-        //p.setRespawnLocation(p.getLocation());
+        p.setRespawnLocation(p.getLocation());
         Bukkit.getScheduler().runTaskLater(plugin, () -> p.spigot().respawn(), 1L);
     }
 
