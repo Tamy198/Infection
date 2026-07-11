@@ -44,8 +44,8 @@ public final class Infection extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(nameTagsOffCommand, this);
         Objects.requireNonNull(getCommand("fly")).setExecutor(new FlyCommand());
         Objects.requireNonNull(getCommand("infection")).setExecutor(infectionCommand);
-        Objects.requireNonNull(getCommand("name-tags-on")).setExecutor(nameTagsOnCommand);
-        Objects.requireNonNull(getCommand("name-tags-off")).setExecutor(nameTagsOffCommand);
+        Objects.requireNonNull(getCommand("nametagson")).setExecutor(nameTagsOnCommand);
+        Objects.requireNonNull(getCommand("nametagsoff")).setExecutor(nameTagsOffCommand);
     }
 
     @EventHandler
