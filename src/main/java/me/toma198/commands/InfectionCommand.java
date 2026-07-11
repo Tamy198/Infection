@@ -350,18 +350,16 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
         // Activate a respawn event a tick later
         // ** DOESN'T WORK - RESPAWNS WRONG POSITION **
-        Location location = p.getLocation();
         p.setRespawnLocation(p.getLocation());
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            p.spigot().respawn();
-            p.teleport(location);
-        }, 1L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> p.spigot().respawn(), 1L);
     }
 
     // Run conversion if necessary upon respawn
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent e) {
         Player p = e.getPlayer();
+        Location location = p.getLocation();
+        Bukkit.getScheduler().runTaskLater(plugin, () -> p.teleport(location), 1L);
 
         if (conversionList.contains(p)) {
             conversionList.remove(p);
