@@ -224,18 +224,20 @@ public class InfectionCommand implements CommandExecutor, Listener {
      * 2. If an imposter, turn into spectate (done?)
      * 3. If an innocent, check if an imposter is near (or if the imposter damaged them)
      * and then begin the conversion (done?)
-     * 4. Design the conversion (done?)
-     * 5. Imposters wrath (yet to implement)
+     * 4. Design the conversion (need a repeated task for freezing and fixed respawning)
+     * 5. Imposters wrath (need to implement the command)
      */
 
-    /** BUGS:
-     * 1. Countdown (fixed)
+    /** BUGS/FIXES:
+     * 1. Imposter wrath (command)
      * 2. Respawning (doesn't respawn in correct position)
      * 3. Invincible after conversion (fixed)
      * 4. No effects after death (fixed)
-     * 5. No continuous freezing after death
-     * 6. Dead player doesn't sync with the world after conversion (fixed)
-     * 7. Joining order effect who becomes imposter?
+     * 5. Countdown (fixed)
+     * 6. No continuous freezing after death
+     * 7. Dead player doesn't sync with the world after conversion (fixed)
+     * 8. Joining order effect who becomes imposter?
+     * 9. God class
      */
 
     @EventHandler
@@ -276,10 +278,27 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
         if (infected == 0 && imposterList.isEmpty()) {
             // allow them to choose a player to inherit the infection (imposter's wrath)
-            p.sendMessage(ChatColor.RED + "Choose an imposter");
             // **TO IMPLEMENT**
-            // **Also need to implement conditions for when it runs (no visible attempt)**
-        } else if (imposterList.isEmpty()) {
+            StringBuilder innocents = new StringBuilder("§cChoose a player to make imposter: ");
+            int innocentCount = 0;
+            for (Player imposter : imposterList) {
+                innocentCount++;
+                if (innocentCount == imposterList.size()) {
+                    innocents.append(imposter.getName()).append("c§");
+                } else {
+                    innocents.append(imposter.getName()).append(", ");
+                }
+            }
+            p.sendMessage(ChatColor.RED + innocents.toString());
+
+            // 1. command (infect) which only this player can access
+            // 2. check if valid player
+            // 3. run the conversion method on them
+            // 4. GIVE A TIME LIMIT TO THIS CHOICE (1 minute)
+            return;
+        }
+
+        if (imposterList.isEmpty()) {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 player.sendMessage(ChatColor.GREEN + "Innocents have won!");
             }
@@ -331,8 +350,12 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
         // Activate a respawn event a tick later
         // ** DOESN'T WORK - RESPAWNS WRONG POSITION **
+        Location location = p.getLocation();
         p.setRespawnLocation(p.getLocation());
-        Bukkit.getScheduler().runTaskLater(plugin, () -> p.spigot().respawn(), 1L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            p.spigot().respawn();
+            p.teleport(location);
+        }, 1L);
     }
 
     // Run conversion if necessary upon respawn
@@ -357,18 +380,8 @@ public class InfectionCommand implements CommandExecutor, Listener {
                     600, 255, true, true));
         }, 1L);
 
-        // Applies a freezing effect to the player
-        /*boolean freezing = true;
-        while (freezing) {
-            p.setFreezeTicks(p.getMaxFreezeTicks());
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                final freezing = false;
-                System.out.println("Waited 30 second?");
-            }, 600L);
-        }*/
-
         // Apply freezing effect for 30 seconds
-        // ** ONLY LASTS FOR A LIMITED WINDOW **
+        // ** ONLY LASTS FOR A LIMITED WINDOW - NEED A REPEATED TASK **
         p.playSound(p.getLocation(), Sound.ENTITY_CREAKING_FREEZE,
                 10000f, 1f);
         p.setFreezeTicks(p.getMaxFreezeTicks());
@@ -385,13 +398,20 @@ public class InfectionCommand implements CommandExecutor, Listener {
         System.out.println(innocentList);
         infected++;
 
+        // Check if imposters have won
+        if (innocentList.isEmpty()) {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                player.sendMessage(ChatColor.RED + "Imposters have won!");
+            }
+            return;
+        }
+
         // Conversion lasts 30 seconds
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             System.out.println("Executed after 30 seconds!");
             p.removePotionEffect(PotionEffectType.SLOWNESS);
             p.removePotionEffect(PotionEffectType.RESISTANCE);
             p.removePotionEffect(PotionEffectType.REGENERATION);
-            System.out.println("Waited 30 second?");
         }, 600L);
     }
 
