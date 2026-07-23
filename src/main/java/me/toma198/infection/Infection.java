@@ -4,6 +4,7 @@ import me.toma198.commands.FlyCommand;
 import me.toma198.commands.InfectionCommand;
 import me.toma198.commands.NameTagsOffCommand;
 import me.toma198.commands.NameTagsOnCommand;
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;

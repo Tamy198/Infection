@@ -12,6 +12,9 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -140,6 +143,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         String title3 = ChatColor.GOLD + Integer.toString(3);
         String title2 = ChatColor.GOLD + Integer.toString(2);
         String title1 = ChatColor.GOLD + Integer.toString(1);
+        String title = "Remember chat and tab";
 
         // Countdown and imposter reveal
         printTitle(title3, players);
@@ -188,6 +192,9 @@ public class InfectionCommand implements CommandExecutor, Listener {
                             player.sendMessage(imposterReveal.toString());
                         }
                         System.out.println("Executed after 4 second delay!");
+
+                        Bukkit.getScheduler().runTaskLater(plugin, () ->
+                                printTitle(title, players), 60L);
                     }, 80L);
                 }, 20L);
             }, 20L);
@@ -308,7 +315,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
      * 6. No continuous freezing after death
      * 7. Dead player doesn't sync with the world after conversion (fixed)
      * 8. God class
-     * 9. Hide name tags for EVERYONE and hide death messages for INNOCENTS
+     * 9. Hide name tags for EVERYONE (BUG) and death messages for INNOCENTS (chat off)
      */
 
     @EventHandler
@@ -487,7 +494,25 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
     void
     freezing(Player p) {
-        Bukkit.getScheduler().runTaskLater(plugin, () ->
-                p.setFreezeTicks(p.getMaxFreezeTicks()), 1L);
+        // ** I still don't think it works **
+        /*
+        BukkitScheduler scheduler = Bukkit.getScheduler();
+        scheduler.runTaskTimer(plugin, task1 ->
+                p.setFreezeTicks(p.getMaxFreezeTicks()), 1L, 1L);
+        Bukkit.getScheduler().runTaskLater(plugin, BukkitTask::cancel, 20L * 30L);
+         */
+
+        new BukkitRunnable() {
+            private int ticks = 0;
+
+            @Override
+            public void run() {
+                p.setFreezeTicks(p.getMaxFreezeTicks());
+                ticks++;
+                if (ticks >= 20 * 30) {
+                    cancel();
+                }
+            }
+        }.runTaskTimer(plugin, 0L, 1L);
     }
 }

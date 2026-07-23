@@ -1,6 +1,4 @@
-me/toma198/commands/NameTagsOnCommand.class
-me/toma198/commands/NameTagsOffCommand$1.class
-me/toma198/commands/FlyCommand.class
 me/toma198/commands/InfectionCommand.class
-me/toma198/commands/NameTagsOnCommand$1.class
+me/toma198/commands/NameTagsOnCommand.class
 me/toma198/commands/NameTagsOffCommand.class
+me/toma198/commands/FlyCommand.class

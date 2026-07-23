@@ -1,6 +1,5 @@
 package me.toma198.commands;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -9,8 +8,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.*;
 import org.jspecify.annotations.NonNull;
-
-import java.util.Set;
 
 public class NameTagsOffCommand implements CommandExecutor, Listener {
     Plugin plugin;
@@ -26,131 +23,30 @@ public class NameTagsOffCommand implements CommandExecutor, Listener {
             return true;
         }
 
-        Scoreboard board = new Scoreboard() {
-            @Override
-            public Objective registerNewObjective(String s, String s1) {
-                return null;
-            }
-
-            @Override
-            public Objective registerNewObjective(String s, String s1, String s2) {
-                return null;
-            }
-
-            @Override
-            public Objective registerNewObjective(String s, String s1, String s2, RenderType renderType) {
-                return null;
-            }
-
-            @Override
-            public Objective registerNewObjective(String s, Criteria criteria, String s1) {
-                return null;
-            }
-
-            @Override
-            public Objective registerNewObjective(String s, Criteria criteria, String s1, RenderType renderType) {
-                return null;
-            }
-
-            @Override
-            public Objective getObjective(String s) {
-                return null;
-            }
-
-            @Override
-            public Set<Objective> getObjectivesByCriteria(String s) {
-                return Set.of();
-            }
-
-            @Override
-            public Set<Objective> getObjectivesByCriteria(Criteria criteria) {
-                return Set.of();
-            }
-
-            @Override
-            public Set<Objective> getObjectives() {
-                return Set.of();
-            }
-
-            @Override
-            public Objective getObjective(DisplaySlot displaySlot) {
-                return null;
-            }
-
-            @Override
-            public Set<Score> getScores(OfflinePlayer offlinePlayer) {
-                return Set.of();
-            }
-
-            @Override
-            public Set<Score> getScores(String s) {
-                return Set.of();
-            }
-
-            @Override
-            public void resetScores(OfflinePlayer offlinePlayer) {
-
-            }
-
-            @Override
-            public void resetScores(String s) {
-
-            }
-
-            @Override
-            public Team getPlayerTeam(OfflinePlayer offlinePlayer) {
-                return null;
-            }
-
-            @Override
-            public Team getEntryTeam(String s) {
-                return null;
-            }
-
-            @Override
-            public Team getTeam(String s) {
-                return null;
-            }
-
-            @Override
-            public Set<Team> getTeams() {
-                return Set.of();
-            }
-
-            @Override
-            public Team registerNewTeam(String s) {
-                return null;
-            }
-
-            @Override
-            public Set<OfflinePlayer> getPlayers() {
-                return Set.of();
-            }
-
-            @Override
-            public Set<String> getEntries() {
-                return Set.of();
-            }
-
-            @Override
-            public void clearSlot(DisplaySlot displaySlot) {
-
-            }
-        };
-        Team hidden = board.getTeam("hidden");
-        if (hidden == null) {
-            hidden = board.registerNewTeam("hidden");
-        }
-
-        hidden.setOption(
-                Team.Option.NAME_TAG_VISIBILITY,
-                Team.OptionStatus.NEVER
-        );
-
         for (Player player : Bukkit.getOnlinePlayers()) {
-            hidden.addEntry(player.getName());
+            disableNametag(player);
+        }
+        return true;
+    }
+
+    // diable nametags for a player
+    public void disableNametag(Player player) {
+        ScoreboardManager manager = Bukkit.getScoreboardManager();
+        if (manager == null) return;
+
+        Scoreboard scoreboard = manager.getMainScoreboard();
+
+        // Find or create a team for hidden nametags
+        Team team = scoreboard.getTeam("hide_nametags");
+        if (team == null) {
+            team = scoreboard.registerNewTeam("hide_nametags");
+            team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
         }
 
-        return true;
+        // Add the player to the team
+        team.addEntry(player.getName());
+
+        // Make sure the player sees the updated scoreboard
+        player.setScoreboard(scoreboard);
     }
 }
