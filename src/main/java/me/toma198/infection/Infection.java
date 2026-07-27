@@ -1,9 +1,6 @@
 package me.toma198.infection;
 
-import me.toma198.commands.FlyCommand;
-import me.toma198.commands.InfectionCommand;
-import me.toma198.commands.NameTagsOffCommand;
-import me.toma198.commands.NameTagsOnCommand;
+import me.toma198.commands.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -36,16 +33,19 @@ public final class Infection extends JavaPlugin implements Listener {
         InfectionCommand infectionCommand = new InfectionCommand(this);
         NameTagsOnCommand nameTagsOnCommand = new NameTagsOnCommand(this);
         NameTagsOffCommand nameTagsOffCommand = new NameTagsOffCommand(this);
+        InfectCommand infectCommand = new InfectCommand();
 
         // Register commands and listeners
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(infectionCommand, this);
         getServer().getPluginManager().registerEvents(nameTagsOnCommand, this);
         getServer().getPluginManager().registerEvents(nameTagsOffCommand, this);
+        getServer().getPluginManager().registerEvents(infectCommand, this);
         Objects.requireNonNull(getCommand("fly")).setExecutor(new FlyCommand());
         Objects.requireNonNull(getCommand("infection")).setExecutor(infectionCommand);
         Objects.requireNonNull(getCommand("nameTagsOn")).setExecutor(nameTagsOnCommand);
         Objects.requireNonNull(getCommand("nameTagsOff")).setExecutor(nameTagsOffCommand);
+        Objects.requireNonNull(getCommand("infect")).setExecutor(infectCommand);
     }
 
     @EventHandler

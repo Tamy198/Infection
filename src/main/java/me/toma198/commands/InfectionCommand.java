@@ -19,13 +19,9 @@ import java.util.*;
 
 import static org.bukkit.Bukkit.getServer;
 
+// The god of god classes, my masterpiece of a god class (I just learnt about them lol after
+// finishing the project). A good initial java project, though not very object-oriented
 public class InfectionCommand implements CommandExecutor, Listener {
-    /* just for me to practice my java - later fix would be to make player count an argument
-    int player_count;
-    public InfectionCommand(int player_count) {
-        this.player_count = player_count;
-    }
-    */
     Plugin plugin;
 
     public InfectionCommand(Plugin plugin) {
@@ -45,8 +41,15 @@ public class InfectionCommand implements CommandExecutor, Listener {
     // How many people have been infected during the game
     int infected = 0;
 
+    // Who has access to infect command
+    // ArrayList<Player> wrathList = new ArrayList<>();
+
     // The list of people who should be converted
     ArrayList<Player> conversionList = new ArrayList<>();
+
+    public InfectionCommand() {
+
+    }
 
     @Override
     public boolean onCommand(@NonNull CommandSender sender, @NonNull Command command,
@@ -141,7 +144,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
         String title3 = ChatColor.GOLD + Integer.toString(3);
         String title2 = ChatColor.GOLD + Integer.toString(2);
         String title1 = ChatColor.GOLD + Integer.toString(1);
-        String title = "Remember chat and tab";
+        String title = "Rmb chat/tab";
 
         // Countdown and imposter reveal
         printTitle(title3, players);
@@ -191,71 +194,21 @@ public class InfectionCommand implements CommandExecutor, Listener {
                         }
                         System.out.println("Executed after 4 second delay!");
 
-                        Bukkit.getScheduler().runTaskLater(plugin, () ->
-                                printTitle(title, players), 60L);
+                        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                            for (Player player : players) {
+                                player.sendTitle(title, subtitle, 5, 60, 5);
+                                player.playSound(player.getLocation(),
+                                        Sound.BLOCK_AMETHYST_CLUSTER_BREAK,
+                                        10000f, 1f);
+                                player.playSound(player.getLocation(),
+                                        Sound.ENTITY_CREEPER_PRIMED,
+                                        10000f, 1f);
+                            }
+                        }, 60L);
                     }, 80L);
                 }, 20L);
             }, 20L);
         }, 20L);
-
-        /*
-        // 1-second delay
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            printTitle(title2, players);
-            System.out.println("Executed after delay!");
-        }, 20L);
-
-        // 2-second delay
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            printTitle(title1, players);
-            System.out.println("Executed after delay!");
-        }, 40L);
-
-        // Wait an additional second to reveal roles
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            // Inform imposters of their dubiousness
-            String subtitle = "";
-            String imposterMessage = ChatColor.RED + "You are the imposter:)";
-            for (Player player : imposterList) {
-                player.sendTitle(imposterMessage, subtitle, 10, 70, 20);
-                player.sendMessage("§cYou are the imposter, infect the innocents:)");
-                player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 10000f, 1f);
-            }
-
-            // Inform innocents of their innocence
-            String innocent = ChatColor.GREEN + "You are NOT the imposter:)";
-            for (Player player : innocentList) {
-                player.sendTitle(innocent, subtitle, 10, 70, 20);
-                player.sendMessage("§aYou are innocent:)");
-                player.playSound(player.getLocation(), Sound.ITEM_GOAT_HORN_SOUND_0, 10000f, 1f);
-            }
-        }, 60L);
-
-        // Wait 4 seconds - from the additional 4 from earlier - for dramatic effect
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            // Reveal the imposters to one another
-            StringBuilder imposterReveal = new StringBuilder("§cThe imposters are: ");
-            int imposterCount = 0;
-            for (Player imposter : imposterList) {
-                imposterCount++;
-                if (imposterCount == imposterList.size()) {
-                    imposterReveal.append(imposter.getName());
-                } else {
-                    imposterReveal.append(imposter.getName()).append(", ");
-                }
-            }
-
-            // Then send the reveal message to imposters
-            for (Player player : imposterList) {
-                player.sendMessage(imposterReveal.toString());
-            }
-            System.out.println("Executed after 4 second delay!");
-        }, 140L);
-         */
-
-        System.out.println("Printing imposter and innocent list");
-        System.out.println(imposterList);
-        System.out.println(innocentList);
 
         return true;
     }
@@ -272,27 +225,6 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }
     }
 
-    // Hide the nametags of all players
-    /*
-    void
-    hide_nametags() {
-        Scoreboard board = null;
-        Team hidden = board.getTeam("hidden");
-        if (hidden == null) {
-            hidden = board.registerNewTeam("hidden");
-        }
-
-        hidden.setOption(
-                Team.Option.NAME_TAG_VISIBILITY,
-                Team.OptionStatus.NEVER
-        );
-
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            hidden.addEntry(player.getName());
-        }
-    }
-     */
-
     /* * Step 2. Design the infection mechanic
      * (if a death is within 30 blocks of imposter, conversion begins)
      *
@@ -300,7 +232,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
      * 2. If an imposter, turn into spectate (done?)
      * 3. If an innocent, check if an imposter is near (or if the imposter damaged them)
      * and then begin the conversion (done?)
-     * 4. Design the conversion (need a repeated task for freezing and fixed respawning)
+     * 4. Design the conversion (done?)
      * 5. Imposters wrath (need to implement the command)
      */
 
@@ -310,10 +242,11 @@ public class InfectionCommand implements CommandExecutor, Listener {
      * 3. Invincible after conversion (fixed)
      * 4. No effects after death (fixed)
      * 5. Countdown (fixed)
-     * 6. No continuous freezing after death
+     * 6. No continuous freezing after death (FIXED!!!!!!!)
      * 7. Dead player doesn't sync with the world after conversion (fixed)
      * 8. God class
-     * 9. Hide name tags for EVERYONE (BUG) and death messages for INNOCENTS (chat off)
+     * 9. Hide name tags for EVERYONE (fixed!!!) and death messages for INNOCENTS (chat off)
+     * 10. Win conditions
      */
 
     @EventHandler
@@ -321,7 +254,6 @@ public class InfectionCommand implements CommandExecutor, Listener {
         Player dead = e.getEntity();
         System.out.println(dead.getName() + " has died!");
         System.out.println(dead);
-        System.out.println(imposterList);
 
         boolean imposter = false;
         // see if the death is an imposter
@@ -354,7 +286,6 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
         if (infected == 0 && imposterList.isEmpty()) {
             // allow them to choose a player to inherit the infection (imposter's wrath)
-            // **TO IMPLEMENT**
             StringBuilder innocents = new StringBuilder("§cChoose a player to make imposter: ");
             int innocentCount = 0;
             for (Player imposter : imposterList) {
@@ -367,10 +298,36 @@ public class InfectionCommand implements CommandExecutor, Listener {
             }
             p.sendMessage(ChatColor.RED + innocents.toString());
 
-            // 1. command (infect) which only this player can access
-            // 2. check if valid player
-            // 3. run the conversion method on them
-            // 4. GIVE A TIME LIMIT TO THIS CHOICE (1 minute)
+            // Tell the player how to use the command
+            p.sendMessage("§To use the command type: /infect <InnocentPlayerUsername>");
+            p.sendMessage("§Username must be exact and the innocent player must be alive");
+            p.sendMessage("§You have one minute to make a choice or an innocent is " +
+                    "chosen at random");
+
+            // Allow them to execute the command
+            org.bukkit.permissions.PermissionAttachment attachment = p.addAttachment(plugin);
+            attachment.setPermission("myplugin.commands.infect", true);
+
+            // Choose a random player to be converted if the dead imposter fails to
+            // execute command in time
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                // Choose a random alive innocent player
+                /* ArrayList<Player> randInnocent = new ArrayList<>(innocentList);
+                Collections.shuffle(randInnocent);
+                 */
+                Random random = new Random();
+                conversion(innocentList.get(random.nextInt(innocentList.size())));
+                /*
+                for (Player player : players) {
+                    conversion(player);
+                    return true;
+                }
+                 */
+
+                // Remove ability to execute the imposter wrath (infect) command
+                remove_perms(p);
+            }, 1200L);
+
             return;
         }
 
@@ -396,7 +353,6 @@ public class InfectionCommand implements CommandExecutor, Listener {
         double absX;
         double absY;
         double absZ;
-
         double distFromImp;
 
         // Calculate distance of the player who died to the imposter
@@ -412,7 +368,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
 
             distFromImp = Math.sqrt(absX + absY + absZ);
 
-            // if within 30 blocks, conversion conditions are satisfied
+            // if within 30 blocks, begin conversion to imposter
             if (distFromImp <= 30) {
                 activateConversion = true;
                 conversionList.add(p);
@@ -422,6 +378,14 @@ public class InfectionCommand implements CommandExecutor, Listener {
         // else set innocent to spectator
         if (!activateConversion) {
             p.setGameMode(GameMode.SPECTATOR);
+            innocentList.remove(p);
+        }
+
+        // Check if imposters have won
+        if (innocentList.isEmpty()) {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                player.sendMessage(ChatColor.RED + "Imposters have won!");
+            }
         }
 
         // Activate a respawn event a tick later
@@ -455,31 +419,22 @@ public class InfectionCommand implements CommandExecutor, Listener {
                     600, 255, true, true));
         }, 1L);
 
-        // Apply freezing effect for 30 seconds
-        // ** ONLY LASTS FOR A LIMITED WINDOW - NEED A REPEATED TASK **
+
+        // Apply freezing every tick for 30 seconds
         p.playSound(p.getLocation(), Sound.ENTITY_CREAKING_FREEZE,
                 10000f, 1f);
         p.setFreezeTicks(p.getMaxFreezeTicks());
-        // apply freezing every tick
+        freezing(p);
+        /*
         for (int i = 0; i < 30; i++) {
             freezing(p);
         }
+         */
 
         // Set to infected and join the imposter team
         imposterList.add(p);
         innocentList.remove(p);
-        System.out.println("Conversion");
-        System.out.println(imposterList);
-        System.out.println(innocentList);
         infected++;
-
-        // Check if imposters have won
-        if (innocentList.isEmpty()) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                player.sendMessage(ChatColor.RED + "Imposters have won!");
-            }
-            return;
-        }
 
         // Conversion lasts 30 seconds
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -490,22 +445,25 @@ public class InfectionCommand implements CommandExecutor, Listener {
         }, 600L);
     }
 
+    // Remove the ability for all to send this command
+    // ** Loophole if player leaves game? **
+    void
+    remove_perms(Player player) {
+        org.bukkit.permissions.PermissionAttachment attachment = player.addAttachment(plugin);
+        attachment.setPermission("myplugin.commands.infect", false);
+    }
+
+    // Apply freezing every tick for 30 seconds
     void
     freezing(Player p) {
-        // ** I still don't think it works **
-        /*
-        BukkitScheduler scheduler = Bukkit.getScheduler();
-        scheduler.runTaskTimer(plugin, task1 ->
-                p.setFreezeTicks(p.getMaxFreezeTicks()), 1L, 1L);
-        Bukkit.getScheduler().runTaskLater(plugin, BukkitTask::cancel, 20L * 30L);
-         */
-
         new BukkitRunnable() {
             private int ticks = 0;
 
             @Override
             public void run() {
                 p.setFreezeTicks(p.getMaxFreezeTicks());
+                p.playSound(p.getLocation(), Sound.ENTITY_CREAKING_FREEZE,
+                        10000f, 1f);
                 ticks++;
                 if (ticks >= 20 * 30) {
                     cancel();

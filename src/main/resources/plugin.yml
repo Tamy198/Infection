@@ -19,3 +19,7 @@ commands:
     description: Turns name tags off for all players
   nameTagsOff:
     description: Turns name tags on for all players
+  infect:
+    description: Used for the imposter's wrath to infect a chosen player if activated
+    permission: "myplugin.commands.infect"
+    permission-message: You do not have permission to execute this command
