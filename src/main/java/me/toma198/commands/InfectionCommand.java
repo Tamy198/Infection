@@ -237,7 +237,7 @@ public class InfectionCommand implements CommandExecutor, Listener {
      */
 
     /** BUGS/FIXES:
-     * 1. Imposter wrath (command + yet to test)
+     * 1. Imposter wrath (yet to test - the command or permissions didn't work)
      * 2. Respawning (fixed)
      * 3. Invincible after conversion (fixed)
      * 4. No effects after death (fixed)
@@ -299,10 +299,10 @@ public class InfectionCommand implements CommandExecutor, Listener {
             p.sendMessage(ChatColor.RED + innocents.toString());
 
             // Tell the player how to use the command
-            p.sendMessage("§To use the command type: /infect <InnocentPlayerUsername>");
-            p.sendMessage("§Username must be exact and the innocent player must be alive");
-            p.sendMessage("§You have one minute to make a choice or an innocent is " +
-                    "chosen at random");
+            p.sendMessage("§c To use the command type: /infect <InnocentPlayerUsername>.");
+            p.sendMessage("§c Username must exactly match and the innocent player must be alive.");
+            p.sendMessage("§c You have one minute to make a choice or an innocent is " +
+                    "chosen at random.");
 
             // Allow them to execute the command
             org.bukkit.permissions.PermissionAttachment attachment = p.addAttachment(plugin);
