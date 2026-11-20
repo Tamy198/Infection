@@ -1,0 +1,7 @@
+name: infection
+description: $description
+version: '${version}'
+
+main: me.toma198.infection.Infection
+api-version: '26.3'
+load: POSTWORLD
